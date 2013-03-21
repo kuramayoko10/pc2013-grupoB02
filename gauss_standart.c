@@ -1,10 +1,13 @@
-
+/*
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 #include <gmp.h>
 #include "common.h"
 
+// CONSTANTES
+int DIGITS = 10000000;
+float BITS_PER_DIGIT = 4;
 int NUM_ITERATIONS = 25;
 
 typedef struct
@@ -80,9 +83,12 @@ void metodoGaussLegendre(double limInf, double limSup, int numPontos)
         mpf_set(PI.prevValue, PI.curValue);
         
         iter++;
+        
+        mpf_out_str(stdout, 10, DIGITS/(NUM_ITERATIONS*10-iter), PI.curValue);
+        printf("\n");
     }
     
-    ret = mpf_out_str(stdout, 10, DIGITS, PI.curValue);
+    //ret = mpf_out_str(stdout, 10, DIGITS, PI.curValue);
     //gmp_printf("%1.*Ff\n", 100000, PI);
     
     if(ret == 0)
@@ -99,4 +105,4 @@ int main(int argc, const char * argv[])
     
     return 0;
 }
-
+*/
