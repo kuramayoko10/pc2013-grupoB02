@@ -3,7 +3,6 @@
 #include <stdlib.h>
 #include <math.h>
 #include <gmp.h>
-#include "common.h"
 
 // CONSTANTES
 int DIGITS = 10000000;
