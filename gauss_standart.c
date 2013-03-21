@@ -3,10 +3,8 @@
 #include <stdlib.h>
 #include <math.h>
 #include <gmp.h>
+#include "common.h"
 
-// CONSTANTES
-int DIGITS = 10000000;
-float BITS_PER_DIGIT = 3.32192809488736234787f;
 int NUM_ITERATIONS = 25;
 
 typedef struct
