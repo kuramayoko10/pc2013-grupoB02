@@ -4,95 +4,91 @@
 #include <math.h>
 #include <gmp.h>
 
+// CONSTANTES
+int DIGITS = 10000000;
+float BITS_PER_DIGIT = 3.32192809488736234787f;
+int NUM_ITERATIONS = 25;
+
+typedef struct
+{
+    mpf_t prevValue;    // Valor da variavel na iteracao anterior
+    mpf_t curValue;     // Valor da variavel na iteracao atual
+}BigNumber;
+
+
+void initBigNumber(BigNumber *bn)
+{
+    mpf_init(bn->prevValue);
+    mpf_init(bn->curValue);
+}
 
 void metodoGaussLegendre(double limInf, double limSup, int numPontos)
 {
-    mpf_t a;
-    mpf_t b;
-    mpf_t t;
-    mpf_t x;
-    mpf_t PI;
-    mpf_t const2;
-    mpf_t const4;
-    mpf_t tmp;
-    mpf_t tmp2;
-    
     int ret = 1;
-    int done = 0;
     int iter = 0;
+    BigNumber a;
+    BigNumber b;
+    BigNumber t;
+    BigNumber p;
+    BigNumber PI;
+
+    // Set a precisao padrao para os calculos
+    // Baseado no algoritimo de Chudnovsky usando GMP
+    mpf_set_default_prec((long)(DIGITS*BITS_PER_DIGIT+16));
     
-    mpf_set_default_prec(256);
+    // Initialize the BigNumbers
+    initBigNumber(&a);
+    initBigNumber(&b);
+    initBigNumber(&t);
+    initBigNumber(&p);
+    initBigNumber(&PI);
     
-    // Initialize Floats
-    mpf_init(PI);
-    mpf_init(a);
-    mpf_init(b);
-    mpf_init(t);
-    mpf_init(x);
-    mpf_init(tmp);
-    mpf_init(tmp2);
-    mpf_init(const2);
-    mpf_init(const4);
+    // Set values for iteration 0
+    mpf_set_d(a.prevValue, 1.0);
+    mpf_set_d(b.prevValue, 1.0/sqrt(2.0));
+    mpf_set_d(t.prevValue, 1.0/4.0);
+    mpf_set_d(p.prevValue, 1.0);
     
-    // Set values to the variables
-    mpf_set_d(a, 1.0);
-    mpf_set_d(b, 1.0 / sqrt(2.0));
-    mpf_set_d(t, 1.0/4.0);
-    mpf_set_d(x, 1.0);
-    mpf_set_d(const2, 2.0);
-    mpf_set_d(const4, 4.0);
-    
-    mpf_t y;
-    mpf_init(y);
-    
-    //(a-b) > 0.0000001
-    while(1)
+    while(iter != NUM_ITERATIONS)
     {
-        //printf("iter x\n");
-        //printf("\n\n\n\n\n\n\n\n\n\n\n");
+        // an+1 = (an+bn)/2
+        mpf_add(a.curValue, a.prevValue, b.prevValue);
+        mpf_div_ui(a.curValue, a.curValue, 2);
         
-        /*mpf_sub(tmp, a, b);
-        if(mpf_cmp_d(tmp, 0.0000001) < 0)
-            break;*/
+        // bn+1 = sqrt(an*bn)
+        mpf_mul(b.curValue, b.prevValue, a.prevValue);
+        mpf_sqrt(b.curValue, b.curValue);
         
-        if(iter == 10)
-            break;
+        // tn+1 = tn - pn(an - an+1)^2
+        mpf_sub(t.curValue, a.prevValue, a.curValue);
+        mpf_pow_ui(t.curValue, t.curValue, 2);
+        mpf_mul(t.curValue, t.curValue, p.prevValue);
+        mpf_sub(t.curValue, t.prevValue, t.curValue);
         
-        //y = a
-        mpf_set(y, a);
+        // pn+1 = 2*pn
+        mpf_mul_ui(p.curValue, p.prevValue, 2);
         
-        //a = (a+b)/2;
-        mpf_add(a, a, b);
-        mpf_div(a, a, const2);
+        // PI = (an + bn)^2 / 4*tn
+        mpf_add(PI.curValue, a.prevValue, b.prevValue);
+        mpf_pow_ui(PI.curValue, PI.curValue, 2);
+        mpf_div(PI.curValue, PI.curValue, t.prevValue);
+        mpf_div_ui(PI.curValue, PI.curValue, 4);
         
-        //b = sqrt(b*y);
-        mpf_mul(b, b, y);
-        mpf_sqrt(b, b);
+        // Reseta os valores para proxima iteracao
+        mpf_set(a.prevValue, a.curValue);
+        mpf_set(b.prevValue, b.curValue);
+        mpf_set(t.prevValue, t.curValue);
+        mpf_set(p.prevValue, p.curValue);
+        mpf_set(PI.prevValue, PI.curValue);
         
-        //t -= x * pow(y-a, 2);
-        mpf_sub(tmp2, y, a);
-        mpf_pow_ui(tmp, tmp2, 2);
-        mpf_mul(tmp, tmp, x);
-        mpf_sub(t, t, tmp);
-        
-        //x *= 2.0;
-        mpf_mul(x, x, const2);
-        
-        //printf("PI: %1.100Lf\n", pow(a+b, 2)/(4*t));
-        mpf_mul(tmp, t, const4);
-        mpf_add(tmp2, a, b);
-        mpf_pow_ui(tmp2, tmp2, 2);
-        mpf_div(PI, tmp2, tmp);
-        
-        //ret = mpf_out_str(stdout, 10, 1000000, PI);
-        gmp_printf("%.1000Ff\n", PI);
-        
-        if(ret == 0)
-            printf("ERROR\n");
-        
-        printf("\n");
         iter++;
     }
+    
+    ret = mpf_out_str(stdout, 10, DIGITS, PI.curValue);
+    //gmp_printf("%1.*Ff\n", 100000, PI);
+    
+    if(ret == 0)
+        printf("ERROR\n");
     
     //printf("ACABOU!\n");
 }

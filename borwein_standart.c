@@ -1,3 +1,4 @@
+/*
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
@@ -13,16 +14,16 @@ int main(void)
 	mpf_init(s);
 	mpf_init(aux1);
 	mpf_init(aux2);
-	/* a = 1.0/3.0*/
+    //a = 1.0/3.0
 	mpf_set_ui(a, 1);
 	mpf_div_ui(a, a, 3);
-	/* s = (sqrt(3)-1)/2.0*/
+    //s = (sqrt(3)-1)/2.0
 	mpf_sqrt_ui(aux1, 3);
 	mpf_sub_ui(aux1, aux1, 1);
 	mpf_div_ui(s, aux1, 2);
 	for (i=0; i<15; i++)
 	{
-		/*r = 3.0/(1.0+2.0*powl(1.0-s*s*s,1.0/3.0))*/
+        //r = 3.0/(1.0+2.0*powl(1.0-s*s*s,1.0/3.0))
 		mpf_set_ui(aux2, 1);
 		mpf_div_ui(aux2, aux2, 3);
 		mpf_pow_ui(aux1, s, 3);
@@ -31,10 +32,10 @@ int main(void)
 		mpf_mul_ui(aux1, aux1, 2);
 		mpf_add_ui(aux1, aux1, 1);
 		mpf_ui_div(r, 3, aux1);
-		/*s = (r-1.0)/2.0*/
+        //s = (r-1.0)/2.0
 		mpf_sub_ui(aux1, r, 1);
 		mpf_div_ui(s, aux1, 2);
-		/*a = r*r*a-powl(3.0, i)*(r*r-1.0)*/
+        //a = r*r*a-powl(3.0, i)*(r*r-1.0)
 		mpf_pow_ui(aux1, r, 2);
 		mpf_mult(aux1, aux1, a);
 		mpf_pow_ui(aux2, r, 2);
@@ -51,3 +52,4 @@ int main(void)
 	mpf_clear(aux2);
 	return 0;
 }
+*/
