@@ -16,28 +16,26 @@ int DIGITS = 1000000;
 float BITS_PER_DIGIT = 3.32192809488736234787f;
 
 /*variaveis globais que serao usados entre as threads*/
-int dentroCircunferenciaParcial[NUMTHREADS];
-int TOTALParcial[NUMTHREADS];
+unsigned long int dentroCircunferenciaParcial[NUMTHREADS];
+unsigned long int TOTALParcial[NUMTHREADS];
 
 int main(void){
 	/*inicializa as variaveis*/
-	int cont;
+	int cont, numThread[NUMTHREADS];
 	mpf_set_default_prec((long)(DIGITS*BITS_PER_DIGIT+16));
 	mpf_t PI, dentroCircunferencia, TOTAL;
 	pthread_t tID[NUMTHREADS];  // ID das threads
 
-	mpf_init(TOTAL);
-	mpf_init(dentroCircunferencia);
 	mpf_init(PI);
-	mpf_set_d(dentroCircunferencia, 0.0);
-	mpf_set_d(TOTAL, 0.0);	
-	
-
+	mpf_init_set_d(dentroCircunferencia, 0.0);
+	mpf_init_set_d(TOTAL, 0.0);	
+	srand48(time(NULL));
 
 	// Para todas as threads, cria a i-esima thread      
-	for (cont = 0; cont< NUMTHREADS ; cont++)
-		pthread_create (&tID[cont], NULL, calcula, &cont);   	
-
+	for (cont = 0; cont< NUMTHREADS ; cont++){
+		numThread[cont] = cont;
+		pthread_create (&tID[cont], NULL, calcula, &numThread[cont]);   	
+	}
 	// Para cada thread, espera que as threads terminem 
 	for (cont = 0; cont< NUMTHREADS ; cont++)
 		pthread_join (tID[cont], NULL);
@@ -66,13 +64,12 @@ void *calcula (void *param) {
 	double x,y;
 	dentroCircunferenciaParcial[thrNum] = 0;
 	TOTALParcial[thrNum] = 0;
-	//printf("%d\n\n", thrNum);
-	srand48(time(NULL));
+
 	for (i = 0; i<NUMIT; i++){
 		TOTALParcial[thrNum]++;
 		x = drand48();
 		y = drand48();
-		if((pow(x, 2) + pow(y,2)) <= 1)
+		if((pow(x, 2) + pow(y,2)) <= 1.0)
 			dentroCircunferenciaParcial[thrNum]++;
 	}
 	pthread_exit(0);
