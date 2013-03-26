@@ -10,6 +10,7 @@ int main(void)
 {
 	register unsigned i;
 	mpf_t  x, y, p, aux1, aux2, sqrtx, invsqrtx;
+	mpf_set_default_prec(256);
 	mpf_init(x);
 	mpf_init(p);
 	mpf_init(aux1);
@@ -20,9 +21,13 @@ int main(void)
 	mpf_set_ui(x, 2);
 	mpf_sqrt(x, x);
 	/* y = sqrt(sqrt(2)) = sqrt(x)*/
+	printf("oooie\n");
+	fflush(stdout);
 	mpf_sqrt(y, x);
 	/* p = 2 + sqrt(2) = 2 + x*/
 	mpf_add_ui(p, x, 2);
+	printf("oooie\n");
+	fflush(stdout);
 	for (i=0; i<12; i++)
 	{
 		mpf_sqrt(sqrtx, x);
