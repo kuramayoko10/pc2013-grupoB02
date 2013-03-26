@@ -5,8 +5,8 @@
 #include<gmp.h>
 #include <pthread.h>
 
-
-#define NUMTHREADS 10	/* Total de pontos da thread */
+#define NUMTHREADS 5	/* Total de pontos da thread */
+#define NUMIT 2000000 /*Numero de iteracoes por thread*/
 
 /*funcao que calcula pontos fora e dentro da circunferencia*/
 void *calcula (void *param);
@@ -17,11 +17,9 @@ float BITS_PER_DIGIT = 3.32192809488736234787f;
 
 /*variaveis globais que serao usados entre as threads*/
 int dentroCircunferenciaParcial[NUMTHREADS];
-int TotalParcial[NUMTHREADS];
-
+int TOTALParcial[NUMTHREADS];
 
 int main(void){
-
 	/*inicializa as variaveis*/
 	int cont;
 	mpf_set_default_prec((long)(DIGITS*BITS_PER_DIGIT+16));
@@ -33,17 +31,23 @@ int main(void){
 	mpf_init(PI);
 	mpf_set_d(dentroCircunferencia, 0.0);
 	mpf_set_d(TOTAL, 0.0);	
+	
+
 
 	// Para todas as threads, cria a i-esima thread      
 	for (cont = 0; cont< NUMTHREADS ; cont++)
 		pthread_create (&tID[cont], NULL, calcula, &cont);   	
+
 	// Para cada thread, espera que as threads terminem 
 	for (cont = 0; cont< NUMTHREADS ; cont++)
 		pthread_join (tID[cont], NULL);
+
+	//Para cada thread, soma a sua parcela na conta total
     for (cont = 0; cont< NUMTHREADS ; cont++){
-          mpf_add_ui(TOTAL, TOTAL, TotalParcial[cont]);
+          mpf_add_ui(TOTAL, TOTAL, TOTALParcial[cont]);
           mpf_add_ui(dentroCircunferencia, dentroCircunferencia, dentroCircunferenciaParcial[cont]);
-    }	
+	}
+
 	mpf_div (PI, dentroCircunferencia, TOTAL);
 	mpf_mul_ui (PI, PI, 4);
 	mpf_out_str(stdout, 10, DIGITS, PI);
@@ -52,21 +56,24 @@ int main(void){
 	mpf_clear (PI);
 	mpf_clear (TOTAL);
 	mpf_clear (dentroCircunferencia);
-	return 1;
+	return 0;
 }
 
 /*cada Thread calcula um numero de vezes quantos pontos ficam dentro da circunferencia. No final ele junta todas essas somas*/
 void *calcula (void *param) {
-	int i;
+	int i=0;
 	int thrNum = *((int *)param); // O número da thread ()
 	double x,y;
-
-	for (i = 0; i<1000000; i++){
+	dentroCircunferenciaParcial[thrNum] = 0;
+	TOTALParcial[thrNum] = 0;
+	//printf("%d\n\n", thrNum);
+	srand48(time(NULL));
+	for (i = 0; i<NUMIT; i++){
+		TOTALParcial[thrNum]++;
 		x = drand48();
 		y = drand48();
 		if((pow(x, 2) + pow(y,2)) <= 1)
 			dentroCircunferenciaParcial[thrNum]++;
-		TotalParcial[thrNum]++;
 	}
 	pthread_exit(0);
 }
