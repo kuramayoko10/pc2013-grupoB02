@@ -8,10 +8,10 @@
 
 int main(void)
 {
-	register unsigned i;
+	unsigned i;
 	mpf_t  x, y, p, aux1, aux2, sqrtx, invsqrtx;
-	mpf_set_default_prec(BITS_PER_DIGIT*DIGITS);
-	//mpf_set_default_prec(4096);
+	//mpf_set_default_prec(BITS_PER_DIGIT*DIGITS);
+	mpf_set_default_prec(4096);
 	mpf_init(x);
 	mpf_init(y);
 	mpf_init(p);
