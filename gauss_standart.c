@@ -7,7 +7,7 @@
 // CONSTANTES
 int DIGITS = 10000000;
 float BITS_PER_DIGIT = 4;
-int NUM_ITERATIONS = 25;
+int NUM_ITERATIONS = 20;
 
 typedef struct
 {
@@ -22,9 +22,8 @@ void initBigNumber(BigNumber *bn)
     mpf_init(bn->curValue);
 }
 
-void metodoGaussLegendre(double limInf, double limSup, int numPontos)
+void metodoGaussLegendre(double limitSup, double limitInf, double tValue, int nPoints)
 {
-    int ret = 1;
     int iter = 0;
     BigNumber a;
     BigNumber b;
@@ -44,37 +43,49 @@ void metodoGaussLegendre(double limInf, double limSup, int numPontos)
     initBigNumber(&PI);
     
     // Set values for iteration 0
-    mpf_set_d(a.prevValue, 1.0);
-    mpf_set_d(b.prevValue, 1.0/sqrt(2.0));
-    mpf_set_d(t.prevValue, 1.0/4.0);
-    mpf_set_d(p.prevValue, 1.0);
+    mpf_set_d(a.prevValue, limitSup);
+    //mpf_set_d(b.prevValue, limitInf);
+    mpf_set_d(b.prevValue, limitInf);
+    mpf_sqrt(b.prevValue, b.prevValue);
+    mpf_set_d(t.prevValue, tValue);
+    mpf_set_d(p.prevValue, nPoints);
     
     while(iter != NUM_ITERATIONS)
     {
+        // PI = (an + bn)^2 / (4*tn)
+        mpf_add(PI.curValue, a.prevValue, b.prevValue);
+        mpf_pow_ui(PI.curValue, PI.curValue, 2);
+        mpf_div(PI.curValue, PI.curValue, t.prevValue);
+        mpf_div_ui(PI.curValue, PI.curValue, 4);
+        //mpf_out_str(stdout, 10, 50, PI.curValue);
+        //printf("\n");
+        
         // an+1 = (an+bn)/2
         mpf_add(a.curValue, a.prevValue, b.prevValue);
         mpf_div_ui(a.curValue, a.curValue, 2);
+        //mpf_out_str(stdout, 10, 50, a.curValue);
+        //printf("\n");
         
         // bn+1 = sqrt(an*bn)
         mpf_mul(b.curValue, b.prevValue, a.prevValue);
         mpf_sqrt(b.curValue, b.curValue);
+        //mpf_out_str(stdout, 10, 50, b.curValue);
+        //printf("\n");
         
         // tn+1 = tn - pn(an - an+1)^2
         mpf_sub(t.curValue, a.prevValue, a.curValue);
         mpf_pow_ui(t.curValue, t.curValue, 2);
         mpf_mul(t.curValue, t.curValue, p.prevValue);
         mpf_sub(t.curValue, t.prevValue, t.curValue);
+        //mpf_out_str(stdout, 10, 50, t.curValue);
+        //printf("\n");
         
         // pn+1 = 2*pn
         mpf_mul_ui(p.curValue, p.prevValue, 2);
+        //mpf_out_str(stdout, 10, 50, p.curValue);
+        //printf("\n");
         
-        // PI = (an + bn)^2 / 4*tn
-        mpf_add(PI.curValue, a.prevValue, b.prevValue);
-        mpf_pow_ui(PI.curValue, PI.curValue, 2);
-        mpf_div(PI.curValue, PI.curValue, t.prevValue);
-        mpf_div_ui(PI.curValue, PI.curValue, 4);
-        
-        // Reseta os valores para proxima iteracao
+        // Atualiza os valores para proxima iteracao
         mpf_set(a.prevValue, a.curValue);
         mpf_set(b.prevValue, b.curValue);
         mpf_set(t.prevValue, t.curValue);
@@ -82,25 +93,16 @@ void metodoGaussLegendre(double limInf, double limSup, int numPontos)
         mpf_set(PI.prevValue, PI.curValue);
         
         iter++;
-        
-        mpf_out_str(stdout, 10, DIGITS/(NUM_ITERATIONS*10-iter), PI.curValue);
-        printf("\n");
     }
     
-    //ret = mpf_out_str(stdout, 10, DIGITS, PI.curValue);
-    //gmp_printf("%1.*Ff\n", 100000, PI);
-    
-    if(ret == 0)
-        printf("ERROR\n");
-    
-    //printf("ACABOU!\n");
+    mpf_out_str(stdout, 10, DIGITS, PI.curValue);
 }
 
 
 int main(int argc, const char * argv[])
 {
-    
-    metodoGaussLegendre(1.0, 1.0/sqrt(2.0), 10);
+    // Executa o algoritimo de GaussLegendre para calculo do PI
+    metodoGaussLegendre(1.0, 0.5, 1.0/4.0, 1);
     
     return 0;
 }

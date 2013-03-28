@@ -27,7 +27,7 @@ typedef struct
 }GaussLegendre;
 
 
-void metodoGaussLegendre(double limInf, double limSup, int numPontos);
+void metodoGaussLegendre(double limitInf, double limitSup, double tValue, int nPoints);
 void initBigNumber(BigNumber *bn);
 void* calculatePI(void *gl);
 void* updateA(void *gl);
@@ -39,13 +39,13 @@ void* updateT(void *gl);
 int main(int argc, const char * argv[])
 {
     
-    metodoGaussLegendre(1.0, 1.0/sqrt(2.0), 10);
+    metodoGaussLegendre(1.0, 0.5, 0.25, 1);
     
     return 0;
 }
 
 
-void metodoGaussLegendre(double limInf, double limSup, int numPontos)
+void metodoGaussLegendre(double limitInf, double limitSup, double tValue, int nPoints)
 {
     int iter = 0;
     int i = 0;
@@ -67,10 +67,11 @@ void metodoGaussLegendre(double limInf, double limSup, int numPontos)
     initBigNumber(&gl->PI);
     
     // Set valores para a iteracao 0 (PEGAR POR PARAMETRO)
-    mpf_set_d(gl->a.prevValue, 1.0);
-    mpf_set_d(gl->b.prevValue, 1.0/sqrt(2.0));
-    mpf_set_d(gl->t.prevValue, 1.0/4.0);
-    mpf_set_d(gl->p.prevValue, 1.0);
+    mpf_set_d(gl->a.prevValue, limitSup);
+    mpf_set_d(gl->b.prevValue, limitInf);
+    mpf_sqrt(gl->b.prevValue, gl->b.prevValue);
+    mpf_set_d(gl->t.prevValue, tValue);
+    mpf_set_d(gl->p.prevValue, nPoints);
     
     while(iter != NUM_ITERATIONS)
     {
