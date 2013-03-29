@@ -6,7 +6,7 @@
 #include <pthread.h>
 
 #define NUMTHREADS 5	/* Total de pontos da thread */
-#define NUMIT 2000000 /*Numero de iteracoes por thread*/
+#define NUMIT 200000000 /*Numero de iteracoes por thread*/
 
 /*funcao que calcula pontos fora e dentro da circunferencia*/
 void *calcula (void *param);
