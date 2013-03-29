@@ -7,9 +7,9 @@
 #include "common.h"
 
 pthread_t t1, t2;
-
 unsigned i;
-mpf_t  x, y, p, aux1, aux2, aux3, sqrtx, invsqrtx;
+mpf_t  x, y, p, aux1, aux2, sqrtx, invsqrtx;
+clock_t end, begin, b1, b2, e1, e2;
 
 void *thread1(void *param);
 void *thread2(void *param);
@@ -19,12 +19,12 @@ int main(void)
 	clock_t begin, end;
 	mpf_set_default_prec(BITS_PER_DIGIT*DIGITS);
 	//mpf_set_default_prec(4096);
+	begin = clock();
 	mpf_init(x);
 	mpf_init(y);
 	mpf_init(p);
 	mpf_init(aux1);
 	mpf_init(aux2);
-	mpf_init(aux3);
 	mpf_init(sqrtx);
 	mpf_init(invsqrtx);
 	/* x = sqrt(2)*/
@@ -50,9 +50,10 @@ int main(void)
 	mpf_clear(p);
 	mpf_clear(aux1);
 	mpf_clear(aux2);
-	mpf_clear(aux3);
 	mpf_clear(sqrtx);
 	mpf_clear(invsqrtx);
+	end = clock();
+	printf("Took %lfs\n", (double)(end-begin)/CLOCKS_PER_SEC);
 	pthread_exit(0);
 }
 
@@ -78,3 +79,4 @@ void *thread2(void *param)
 	mpf_mul(aux1 ,p, aux1);
 	pthread_exit(0);
 }
+
