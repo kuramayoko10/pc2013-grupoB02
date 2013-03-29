@@ -23,8 +23,8 @@
 typedef unsigned char bool;
 #endif
 
-#define DIGITS 10
-#define BITS_PER_DIGIT 3
+#define DIGITS 10000000
+#define BITS_PER_DIGIT 3.32192809488736234787f
 
 #endif
 

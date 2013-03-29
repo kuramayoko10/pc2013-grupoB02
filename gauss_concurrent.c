@@ -8,15 +8,17 @@
 // CONSTANTES
 int DIGITS = 10000000;
 float BITS_PER_DIGIT = 4;
-int NUM_ITERATIONS = 25;
+int NUM_ITERATIONS = 24;
 int NUM_OPERATIONS = 5;
 
+// Estrutura BigNumber que contem os valores da iteracao atual e da anterior
 typedef struct
 {
     mpf_t prevValue;    // Valor da variavel na iteracao anterior
     mpf_t curValue;     // Valor da variavel na iteracao atual
 }BigNumber;
 
+// Estrutura GaussLegendre para passar por parametro para as threads
 typedef struct
 {
     BigNumber a;
@@ -27,7 +29,7 @@ typedef struct
 }GaussLegendre;
 
 
-void metodoGaussLegendre(double limInf, double limSup, int numPontos);
+void metodoGaussLegendre(double limitSup, double limitInf, double tValue, int nPoints);
 void initBigNumber(BigNumber *bn);
 void* calculatePI(void *gl);
 void* updateA(void *gl);
@@ -38,14 +40,14 @@ void* updateT(void *gl);
 
 int main(int argc, const char * argv[])
 {
-    
-    metodoGaussLegendre(1.0, 1.0/sqrt(2.0), 10);
+    // Executa o algoritimo de GaussLegendre para calculo do PI
+    metodoGaussLegendre(1.0, 0.5, 0.25, 1);
     
     return 0;
 }
 
 
-void metodoGaussLegendre(double limInf, double limSup, int numPontos)
+void metodoGaussLegendre(double limitSup, double limitInf, double tValue, int nPoints)
 {
     int iter = 0;
     int i = 0;
@@ -66,11 +68,12 @@ void metodoGaussLegendre(double limInf, double limSup, int numPontos)
     initBigNumber(&gl->p);
     initBigNumber(&gl->PI);
     
-    // Set valores para a iteracao 0 (PEGAR POR PARAMETRO)
-    mpf_set_d(gl->a.prevValue, 1.0);
-    mpf_set_d(gl->b.prevValue, 1.0/sqrt(2.0));
-    mpf_set_d(gl->t.prevValue, 1.0/4.0);
-    mpf_set_d(gl->p.prevValue, 1.0);
+    // Set valores para a iteracao 0
+    mpf_set_d(gl->a.prevValue, limitSup);
+    mpf_set_d(gl->b.prevValue, limitInf);
+    mpf_sqrt(gl->b.prevValue, gl->b.prevValue);
+    mpf_set_d(gl->t.prevValue, tValue);
+    mpf_set_d(gl->p.prevValue, nPoints);
     
     while(iter != NUM_ITERATIONS)
     {
@@ -97,11 +100,13 @@ void metodoGaussLegendre(double limInf, double limSup, int numPontos)
         
         iter++;
         
-        //mpf_out_str(stdout, 10, DIGITS/(NUM_ITERATIONS*10-iter), PI.curValue);
-        //printf("\n");
+        // Imprime o resultado a cada iteracao
+        //mpf_out_str(stdout, 10, DIGITS, PI.curValue);
+        //printf("\n\n");
     }
     
-    mpf_out_str(stdout, 10, DIGITS/(NUM_ITERATIONS*10-iter), gl->PI.curValue);
+    // Imprime o resultado final
+    mpf_out_str(stdout, 10, DIGITS, gl->PI.curValue);
 }
 
 void initBigNumber(BigNumber *bn)
