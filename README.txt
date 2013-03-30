@@ -1,9 +1,9 @@
 *************** TRABALHO 1 - Calculo do PI ***************
 
-* NOME				NUSP
-  Cassiano Kleinert Casagrande	
-  Guilherme Simao Gibertoni	7152802
-  Rodrigo Vicente Beber		
+* NOME					NUSP
+  Cassiano Kleinert Casagrande		7152819
+  Guilherme Simao Gibertoni		7152802
+  Rodrigo Vicente Beber		7152490
 
 
 1) Dependências:
