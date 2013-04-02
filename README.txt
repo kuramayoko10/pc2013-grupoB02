@@ -5,6 +5,7 @@
   Guilherme Simao Gibertoni		7152802
   Rodrigo Vicente Beber		7152490
 
+* Endereco do repositorio de codigo: [GIT] https://github.com/kuramayoko10/pc2013-grupoB02.git
 
 1) Dependências:
 -----------------
