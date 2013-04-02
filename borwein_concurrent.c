@@ -43,6 +43,9 @@ int main(void)
 		pthread_join(t1, NULL);
 		pthread_join(t2, NULL);
 		mpf_div(p, aux1, aux2);
+        
+        //Para ver os valores de pi a cada iteracao
+        //mpf_out_str(stdout, 10, DIGITS, p);
 	}
 	mpf_out_str(stdout, 10, DIGITS, p);
 	mpf_clear(x);
