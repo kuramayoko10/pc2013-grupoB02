@@ -1,20 +1,15 @@
-CC=clang
-CCFLAGS=-std=c99 -march=native -mtune=native -Os -Wall -Wextra -pedantic
-CLFLAGS=
+CFLAGS=-march=native -mtune=native -Os -Wall -Wextra -pedantic
 
-all: sstack.o squeue.o llist.o hmap.o
+all: seq omp mpi 
 
-sstack.o: sstack.c sstack.h common.h
-	$(CC) $(CCFLAGS) $< -c
+seq: seq.cpp common.h
+	g++ $(CFLAGS) $< -o seq
 
-squeue.o: squeue.c squeue.h common.h
-	$(CC) $(CCFLAGS) $< -c
+omp: omp.cpp common.h
+	g++ $(CFLAGS) -fopenmp $< -o omp
 
-llist.o: llist.c llist.h common.h
-	$(CC) $(CCFLAGS) $< -c
-
-hmap.o: hmap.c hmap.h common.h
-	$(CC) $(CCFLAGS) $< -c
+mpi: mpi.cpp common.h
+	mpig++ $(CFLAGS) $< -o mpi
 
 utest: utest.c all
 	$(CC) $(CCFLAGS) $(CLFLAGS) -pg $< hmap.o -o utest
