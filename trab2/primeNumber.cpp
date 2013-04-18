@@ -6,7 +6,7 @@
 // Grupo: 02
 // Cassiano K. Casagrande, Guilherme S. Gibertoni, Rodrigo V. C. Beber
 
-#include "primeNumber.h"
+#include "common.h"
 
 
 
