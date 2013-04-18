@@ -1,6 +1,11 @@
 #ifndef COMMON_H
 #define COMMON_H
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#include <vector>
+
 #define SUCCESS 0
 #define FAILURE -1
 #define TRUE 1
@@ -20,5 +25,10 @@
 #ifndef __cplusplus
 typedef unsigned char bool;
 #endif
+
+void sievePrimeNumbers(std::vector<int> *primeList, unsigned int limit);
+void loadList(std::vector<int> *primeList, const char* filename);
+void saveList(std::vector<int> *primeList, const char* filename);
+bool isPrimeNumber(std::vector<int> *primeList, unsigned int number);
 
 #endif

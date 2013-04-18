@@ -10,7 +10,7 @@
 #include <string.h>
 #include <string>
 #include <vector>
-#include "primeNumber.h"
+#include "common.h"
 
 bool isPalindrome(const char *input);
 
