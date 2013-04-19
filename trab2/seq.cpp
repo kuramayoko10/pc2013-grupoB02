@@ -11,6 +11,9 @@
 #include <string>
 #include <vector>
 #include "common.h"
+#include <math.h>
+
+using namespace std;
 
 bool isPalindrome(const char *input);
 bool isSymbol(char input);
@@ -19,8 +22,8 @@ int readWordFromFile(FILE *fp, char *buffer);
 
 int main(int argc, const char * argv[])
 {
-    std::vector<int> primeList;
-    FILE *fileSmall, fileLarge;
+    vector<int> primeList;
+    FILE *fileSmall, *fileLarge;
     char readBuffer[32];
     
     //Gera a lista de numeros primos
@@ -72,10 +75,10 @@ bool isSymbol(char input)
     //if( (input >= 33 && input <= 47) || (input >= 58 && input <= 64) || (input >= 91 && input <= 96) || (input >= 123 && input <= 126))
     if((input >= 48 && input <= 57) || (input >= 65 && input <= 90) || (input >= 397 && input <= 122))
     {
-        return 0;
+        return false;
     }
     
-    return 1;
+    return true;
 }
 
 bool isPalindrome(const char *input)
@@ -83,7 +86,7 @@ bool isPalindrome(const char *input)
     int size = (unsigned)strlen(input) - 1;
     int i = 0;
     
-    while(i <= size)
+    while(i <= ceil(size/2.0))
     {
         if(size < 0)
             return false;
