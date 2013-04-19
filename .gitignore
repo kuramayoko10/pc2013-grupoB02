@@ -1,6 +1,7 @@
 
 .DS_Store
-../montecarlo_concurrent.c~
-../montecarlo_standart.c~
-seq.cpp~
+trab1/montecarlo_concurrent.c~
+trab1/montecarlo_standart.c~
+trab2/seq.cpp~
+.gitignore~
 
