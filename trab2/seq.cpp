@@ -22,7 +22,11 @@ int readWordFromFile(FILE *fp, char *buffer);
 
 int main(int argc, const char * argv[])
 {
+<<<<<<< HEAD
     vector<int> primeList;
+=======
+    std::vector<int> primeList;
+>>>>>>> Pequenas correcoes na deteccao de simbolos.
     FILE *fileSmall, *fileLarge;
     char readBuffer[32];
     
@@ -57,7 +61,7 @@ int readWordFromFile(FILE *fp, char *buffer)
     buffer[0] = '\0';
     read = fgetc(fp);
     
-    while(!isSymbol(read) || !isspace(read))
+    while(!isSymbol(read) && !isspace(read))
     {
         buffer[i++] = read;
         read = fgetc(fp);
@@ -93,6 +97,8 @@ bool isPalindrome(const char *input)
             
         if(input[i] != input[size-i])
             return false;
+        
+        i++;
     }
     
     return true;
