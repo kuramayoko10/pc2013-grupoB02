@@ -150,8 +150,7 @@ void addPalindrome(vector<WordCount> *palindromes, string word)
     //Verifica se a palavra ja foi adicionada
     while(i < size && ret < 0)
     {
-        ret = word.compare(palindromes->at(i).word);
-        i++;
+        ret = word.compare(palindromes->at(i++).word);
     }
     
     //Adiciona o contador
@@ -166,7 +165,10 @@ void addPalindrome(vector<WordCount> *palindromes, string word)
         wc.word = word;
         wc.count = 0;
         
-        palindromes->insert(palindromes->begin()+i, wc);
+        if(i < 1)
+            i = 1;
+        
+        palindromes->insert(palindromes->begin()+i-1, wc);
     }
 }
 
