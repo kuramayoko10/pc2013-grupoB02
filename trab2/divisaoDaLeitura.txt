@@ -1,0 +1,6 @@
+5242880 - total de bytes em um arquivo de 5mb
+52428800 - total de bytes em um arquivo de 50mb
+
+374000	- número de bytes que cada nó vai ler. Após terminar esses bytes, ele vai continuar lendo até achar um ponto(isso é válido para 13 nós, o último nó ira ler ate o final do arquivo). - para arquivo de 5mb
+
+3740000 - idem ao de cima, mas para arquivos de 50mb
