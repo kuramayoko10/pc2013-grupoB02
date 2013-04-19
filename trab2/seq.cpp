@@ -22,11 +22,7 @@ int readWordFromFile(FILE *fp, char *buffer);
 
 int main(int argc, const char * argv[])
 {
-<<<<<<< HEAD
     vector<int> primeList;
-=======
-    std::vector<int> primeList;
->>>>>>> Pequenas correcoes na deteccao de simbolos.
     FILE *fileSmall, *fileLarge;
     char readBuffer[32];
     
