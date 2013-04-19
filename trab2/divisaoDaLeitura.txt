@@ -4,3 +4,5 @@
 374000	- número de bytes que cada nó vai ler. Após terminar esses bytes, ele vai continuar lendo até achar um ponto(isso é válido para 13 nós, o último nó ira ler ate o final do arquivo). - para arquivo de 5mb
 
 3740000 - idem ao de cima, mas para arquivos de 50mb
+
+Medida tomada para criar os vetores que irão armazenar pedações do texto. Como cada vetor é muito grande, e nao temos certeza de quantos dados serão inseridos(a gente le obrigatoriamente 374000 caracteres, mas depois disso é até achar um ponto, \n, exclamação, entre outros que é o fim da frase, e isso pode ser que só ocorra no fim do arquivo), portanto cada vetor terá 375000 posicoes, e a partir disso, caso precisemos de mais memória iremos realocar de 1000 em 1000. Essa decisão foi pensada para agilizarmos o processo, em detrimento da memória.
