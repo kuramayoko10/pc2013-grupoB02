@@ -11,7 +11,9 @@ using namespace std;
 
 bool isPalindrome(const char *input);
 bool isSymbol(char input);
+bool endOfSentence(char input);
 int readWordFromFile(FILE *fp, char *buffer);
+int readSentenceFromFile(FILE *fp, char *buffer, vector<WordCount> *palindromes);
 void addPalindrome(vector<WordCount> *palindromes, string word);
 
 int main(int argc, const char * argv[])
@@ -19,7 +21,8 @@ int main(int argc, const char * argv[])
     vector<int> primeList;
     vector<WordCount> palindromes;
     FILE *inputFile;
-    char readBuffer[32];
+    char smallBuffer[32];
+    char bigBuffer[2048];
     char mode = 'a';
     
     //Gera a lista de numeros primos
@@ -45,19 +48,27 @@ int main(int argc, const char * argv[])
             {
                 case 'S':
                     //Faz a leitura da proxima palavra, descartando pontuacoes
-                    if(readWordFromFile(inputFile, readBuffer))
+                    if(readWordFromFile(inputFile, smallBuffer))
                     {
-                        if(isPalindrome(readBuffer))
+                        if(isPalindrome(smallBuffer))
                         {
-                            //printf("%s\n", readBuffer);
+                            //printf("%s\n", smallBuffer);
                             
                             //Adiciona o palindromo ao vector de palindromos
-                            addPalindrome(&palindromes, readBuffer);
+                            addPalindrome(&palindromes, smallBuffer);
                         }
                     }
                     break;
-                case 'L':
                     
+                case 'L':
+                    //Faz a leitura da proxima frase (terminando em ".!?\n"
+                    if(readSentenceFromFile(inputFile, bigBuffer, &palindromes))
+                    {
+                        if(isPalindrome(bigBuffer))
+                        {
+                            addPalindrome(&palindromes, bigBuffer);
+                        }
+                    }
                     break;
                     
                 default:
@@ -74,13 +85,11 @@ int main(int argc, const char * argv[])
         exit(1);
     }
     
-    printf("Palindrome - Word Check - %s\n", argv[1]);
+    printf("Palindrome - %s\n", argv[1]);
     for(int i = 0; i < palindromes.size(); i++)
     {
         printf("%s - %d\n", palindromes[i].word.c_str(), palindromes[i].count);
     }
-    
-    //printf("Palindrome - Phrase Check - %s\n", filename);
     
     return 0;
 }
@@ -110,15 +119,70 @@ int readWordFromFile(FILE *fp, char *buffer)
     return 0;
 }
 
+int readSentenceFromFile(FILE *fp, char *buffer, vector<WordCount> *palindromes)
+{
+    char read;
+    char word[128];
+    int i = 0;
+    int w = 0;
+    
+    buffer[0] = '\0';
+    read = fgetc(fp);
+    
+    while(!endOfSentence(read) && !feof(fp))
+    {
+        if(isSymbol(read) || isspace(read))
+        {
+            //Processa a palavra anterior e descarta a pontuacao/espaco_branco
+            word[w] = '\0';
+            
+            if(w >= 3)
+            {
+                if(isPalindrome(word))
+                    addPalindrome(palindromes, word);
+                
+                //printf("%s\n", word);
+            }
+            
+            w = 0;
+        }
+        else
+        {
+            buffer[i++] = read;
+            word[w++] = read;
+        }
+        
+        read = fgetc(fp);
+    }
+    buffer[i] = '\0';
+    
+    //Consideramos palindromos apenas as palavras de mais de 3 caracteres.
+    //Pois estas tem um significado claro na lingua
+    //Artigos 'a' ou palavras comprimidas "we'll" nao nos interessa
+    if(strlen(buffer) > 2)
+        return 1;
+    
+    return 0;
+}
+
 bool isSymbol(char input)
 {
-    //Caracteres aceitos sao: digitos de 0-9; letras minisculas/maisculas
-    if((input >= 48 && input <= 57) || (input >= 65 && input <= 90) || (input >= 97 && input <= 122))
+    //Caracteres aceitos sao: letras minisculas/maisculas
+    //(input >= 48 && input <= 57) || 
+    if((input >= 65 && input <= 90) || (input >= 97 && input <= 122))
     {
         return false;
     }
     
     return true;
+}
+
+bool endOfSentence(char input)
+{
+    if(input == '.' || input == '!' || input == '?' || input == '\n')
+        return true;
+    
+    return false;
 }
 
 bool isPalindrome(const char *input)
