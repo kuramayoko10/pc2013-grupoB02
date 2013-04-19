@@ -19,7 +19,6 @@ bool isPalindrome(const char *input);
 bool isSymbol(char input);
 int readWordFromFile(FILE *fp, char *buffer);
 
-
 int main(int argc, const char * argv[])
 {
     vector<int> primeList;
