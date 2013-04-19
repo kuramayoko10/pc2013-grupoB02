@@ -4,7 +4,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <string.h>
 #include <vector>
+#include <string>
 
 #define SUCCESS 0
 #define FAILURE -1
@@ -25,6 +27,12 @@
 #ifndef __cplusplus
 typedef unsigned char bool;
 #endif
+
+typedef struct
+{
+    std::string word;
+    unsigned int count;
+}WordCount;
 
 void sievePrimeNumbers(std::vector<int> *primeList, unsigned int limit);
 void loadList(std::vector<int> *primeList, const char* filename);
