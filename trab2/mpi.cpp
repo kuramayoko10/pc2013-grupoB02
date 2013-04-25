@@ -1,17 +1,16 @@
 #include "mpi.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 
+#define NUMBER_OF_NODES 13
+#define SIZE_OF_SEGMENT ceil(54261766/NUMBER_OF_NODES)
 
-#define SIZE_OF_SEGMENT 3875000
-#define NUMBER_OF_NODES 14
 
 int main(int argc, char **argv)
 {
 	int numtasks, rank, rc, dest, source, tag=1;
-    int size;
-	char *outmsg[NUMBER_OF_NODES];
-    //char **outmsg;
+	char *outmsg[NUMBER_OF_NODES]; 
 	char *inmsg;
 	char fileName[30], aux;
 	register unsigned long int count=0, count2=0, incrementOfSize=1;
@@ -19,10 +18,15 @@ int main(int argc, char **argv)
 	FILE *file;
 	MPI_Status Stat;
 
+
+	//printf("Digite o nome do arquivo de entrada.\n");
+	//scanf("%s", fileName);
+	//file = fopen(fileName, "r");
+
 	/*
 	 * Inicia uma sessão MPI
 	 */
-	rc = MPI_Init(&argc, &argv);
+	MPI_Init(&argc, &argv);
 	/*
 	 * Obtêm o id do processo
 	 */
@@ -75,13 +79,17 @@ int main(int argc, char **argv)
 		inmsg = (char*) malloc (maior*sizeof(char));
 	
 		rc = MPI_Recv(&inmsg, sizeOfVector[rank-1], MPI_CHAR, source, tag, MPI_COMM_WORLD, &Stat);
+		
+		
+
+
 		/*aqui chama a funcao sequencial para calcular se eh palindrome ou nao*/
 	}
-    /*
-     * Finaliza a sessão MPI
-     */
-    MPI_Finalize();
-    
+
+	/*
+	 * Finaliza a sessão MPI
+	 */
+	MPI_Finalize();
 	return 0;
 }
 
