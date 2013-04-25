@@ -7,8 +7,7 @@
 
 int main(int argc, char **argv)
 {
-	int numtasks, rank, rc, dest, source, count, tag=1;
-	char inmsg[10], outmsg[10]; 
+	int numtasks, rank, rc, dest, source, tag=1;
 	char *outmsg[NUMBER_OF_NODES]; 
 	char *inmsg;
 	char fileName[30], aux;
@@ -29,21 +28,24 @@ int main(int argc, char **argv)
 
 	/*inicializa os vetores de caracteres para enviar a msg*/
 	for(count=0; count < NUMBER_OF_NODES; count++)
-		outmsg[count] = (char*) malloc (SIZE_OF_SEGMENT*char);
-
+		outmsg[count] = (char*) malloc (SIZE_OF_SEGMENT*sizeof(char ));
+			
+	for(count=0; count < NUMBER_OF_NODES; count++)
+		outmsg[count][0] = '\0';
 	/*para cada vetor, completa com trechos do texto, chegando ate o seu máximo, depois disso, continua a inserir dados no vetor até que seja encontrado um final de frase(no caso ponto, ponto de exclamação, interrogação ou ENTER)*/
 	for(count2=0; count2 < NUMBER_OF_NODES; count2++){
-		for(count=0;count < SIZE_OF_SEGMENT; count++){
-			outmsg[count2][count] = fgetc(file);
+		for(count=0;!feof(file) && count < SIZE_OF_SEGMENT; count++){
+			fscanf(file, "%c", &outmsg[count2][count]);
 		}
-		aux = fgetc(file);
-		while(aux != '.' || aux != '!' || aux != '?' || aux != '\n'){
+		if(!feof(file))
+			fscanf(file, "%c", &aux);
+		while(!feof(file) && aux != '.' && aux != '!' && aux != '?' && aux != '\n'){
 			if(count == SIZE_OF_SEGMENT+1000*(incrementOfSize-1)){
 	  			outmsg[count2] = (char *) realloc (outmsg[count2], (SIZE_OF_SEGMENT * sizeof(char)+ 1000*incrementOfSize));
   				incrementOfSize++;		
 			}			
 			outmsg[count2][count] = aux;
-			aux = fgetc(file);
+			fscanf(file, "%c", &aux);
 			count++;
 		}
 		incrementOfSize = 1;
@@ -53,7 +55,7 @@ int main(int argc, char **argv)
 			maior = count;
 	}
 	/*assim eu garanto que toda msg que eu receber poderá ser armazenada no vetor inmsg*/
-	inmsg = (char*) malloc (maior*char);
+	inmsg = (char*) malloc (maior*sizeof(char));
 
 	/*
 	 * Inicia uma sessão MPI
