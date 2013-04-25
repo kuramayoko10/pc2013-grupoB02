@@ -13,13 +13,14 @@ bool isPalindrome(const char *input);
 bool isSymbol(char input);
 bool endOfSentence(char input);
 int readWordFromFile(FILE *fp, char *buffer);
-int readSentenceFromFile(FILE *fp, char *buffer, vector<WordCount> *palindromes);
-void addPalindrome(vector<WordCount> *palindromes, string word);
+int readSentenceFromFile(FILE *fp, char *buffer, vector<Palindrome> *palindromes, vector<int> *primeList, char mode);
+int addPalindrome(vector<Palindrome> *palindromes, string word, vector<int> *primeList, char mode);
+int sumASCII(const char *str);
 
 int main(int argc, const char * argv[])
 {
     vector<int> primeList;
-    vector<WordCount> palindromes;
+    vector<Palindrome> palindromes;
     FILE *inputFile;
     char smallBuffer[32];
     char bigBuffer[2048];
@@ -34,7 +35,7 @@ int main(int argc, const char * argv[])
         
         if(!inputFile)
         {
-            printf("Arquivo de entrada nao encontrado!\n");
+            printf("File not found!\n");
             exit(1);
         }
         
@@ -55,24 +56,24 @@ int main(int argc, const char * argv[])
                             //printf("%s\n", smallBuffer);
                             
                             //Adiciona o palindromo ao vector de palindromos
-                            addPalindrome(&palindromes, smallBuffer);
+                            int pos = addPalindrome(&palindromes, smallBuffer, NULL, 'S');
                         }
                     }
                     break;
                     
                 case 'L':
                     //Faz a leitura da proxima frase (terminando em ".!?\n"
-                    if(readSentenceFromFile(inputFile, bigBuffer, &palindromes))
+                    if(readSentenceFromFile(inputFile, bigBuffer, &palindromes, &primeList, mode))
                     {
                         if(isPalindrome(bigBuffer))
                         {
-                            addPalindrome(&palindromes, bigBuffer);
+                            int pos = addPalindrome(&palindromes, bigBuffer, &primeList, 'L');
                         }
                     }
                     break;
                     
                 default:
-                    printf("Modo de leitura invalido. Aceito apenas <S>(small) ou <L>(large)\n");
+                    printf("Invalid reading mode. Provide two options only <S>(small) or <L>(large)\n");
                     exit(1);
                     break;
             }
@@ -80,7 +81,7 @@ int main(int argc, const char * argv[])
     }
     else
     {
-        printf("Execucao invalida. Forneca o arquivo de entrada e modo de leitura:\n%s\n",
+        printf("Failed to execute. Supply an input file with the following format:\n%s\n",
                "$ ./palindromeCheck input.txt <S,L>");
         exit(1);
     }
@@ -88,7 +89,12 @@ int main(int argc, const char * argv[])
     printf("Palindrome - %s\n", argv[1]);
     for(int i = 0; i < palindromes.size(); i++)
     {
-        printf("%s - %d\n", palindromes[i].word.c_str(), palindromes[i].count);
+        printf("%s - %d occurrences", palindromes[i].word.c_str(), palindromes[i].count);
+        
+        if(palindromes[i].primeNumber != 0)
+            printf(" - prime number %d", palindromes[i].primeNumber);
+        
+        printf("\n");
     }
     
     return 0;
@@ -119,7 +125,7 @@ int readWordFromFile(FILE *fp, char *buffer)
     return 0;
 }
 
-int readSentenceFromFile(FILE *fp, char *buffer, vector<WordCount> *palindromes)
+int readSentenceFromFile(FILE *fp, char *buffer, vector<Palindrome> *palindromes, vector<int> *primeList, char mode)
 {
     char read;
     char word[128];
@@ -139,7 +145,7 @@ int readSentenceFromFile(FILE *fp, char *buffer, vector<WordCount> *palindromes)
             if(w >= 3)
             {
                 if(isPalindrome(word))
-                    addPalindrome(palindromes, word);
+                    addPalindrome(palindromes, word, primeList, mode);
                 
                 //printf("%s\n", word);
             }
@@ -197,7 +203,12 @@ bool isPalindrome(const char *input)
         
         //Percorre a palavra da esquerda->direita e direita->esquerda comparando as letras
         //Se alguma comparacao nao bater, a palavra nao eh palindromo
-        if(input[i] != input[size-i])
+        
+        //ignora caps
+        char a = toupper(input[i]);
+        char b = toupper(input[size-i]);
+        
+        if(a != b)
             return false;
         
         i++;
@@ -206,7 +217,8 @@ bool isPalindrome(const char *input)
     return true;
 }
 
-void addPalindrome(vector<WordCount> *palindromes, string word)
+//Adiciona a palavra oa vetor e retorna sua posicao
+int addPalindrome(vector<Palindrome> *palindromes, string word, vector<int> *primeList, char mode)
 {
     int i = 0, ret = -1;
     unsigned long size = palindromes->size();
@@ -224,19 +236,38 @@ void addPalindrome(vector<WordCount> *palindromes, string word)
     }
     else
     {
-        WordCount wc;
+        Palindrome pal;
         
-        wc.word = word;
-        wc.count = 0;
+        pal.word = word;
+        pal.count = 1;
+        pal.primeNumber = 0;
         
         if(i < 1)
             i = 1;
         
-        palindromes->insert(palindromes->begin()+i-1, wc);
+        palindromes->insert(palindromes->begin()+i-1, pal);
+        
+        if(mode == 'L')
+        {
+            int num = sumASCII(word.c_str());
+            
+            if(isPrimeNumber(primeList, num))
+                palindromes->at(i-1).primeNumber = num;
+        }
     }
+    
+    return i-1;
 }
 
-
+int sumASCII(const char *str)
+{
+    int sum = 0;
+    
+    for(int i = 0; i < strlen(str); i++)
+        sum += str[i];
+    
+    return sum;
+}
 
 
 

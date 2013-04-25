@@ -32,7 +32,8 @@ typedef struct
 {
     std::string word;
     unsigned int count;
-}WordCount;
+    unsigned int primeNumber;
+}Palindrome;
 
 void sievePrimeNumbers(std::vector<int> *primeList, unsigned int limit);
 void loadList(std::vector<int> *primeList, const char* filename);
