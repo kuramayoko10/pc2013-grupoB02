@@ -43,6 +43,7 @@ int main(int argc, char **argv)
 			
 		for(count=0; count < NUMBER_OF_NODES; count++)
 			outmsg[count][0] = '\0';
+
 		/*para cada vetor, completa com trechos do texto, chegando ate o seu máximo, depois disso, continua a inserir dados no vetor até que seja 			encontrado um final de frase(no caso ponto, ponto de exclamação, interrogação ou ENTER)*/
 		for(count2=0; count2 < NUMBER_OF_NODES; count2++){
 			for(count=0;!feof(file) && count < SIZE_OF_SEGMENT; count++){
@@ -65,8 +66,6 @@ int main(int argc, char **argv)
 			if(count > maior)
 				maior = count;
 		}
-		/*assim eu garanto que toda msg que eu receber poderá ser armazenada no vetor inmsg*/
-		inmsg = (char*) malloc (maior*sizeof(char));
 		
 		for(dest = 1; dest <= NUMBER_OF_NODES; dest++)
 			rc = MPI_Send(&outmsg[dest-1], sizeOfVector[dest-1], MPI_CHAR, dest, tag, MPI_COMM_WORLD);
@@ -74,6 +73,10 @@ int main(int argc, char **argv)
 	else{
 		source = 0;	
 		printf("rank:%d\n", rank);	
+
+		/*assim eu garanto que toda msg que eu receber poderá ser armazenada no vetor inmsg*/
+		inmsg = (char*) malloc (maior*sizeof(char));
+	
 		rc = MPI_Recv(&inmsg, sizeOfVector[rank-1], MPI_CHAR, source, tag, MPI_COMM_WORLD, &Stat);
 		/*aqui chama a funcao sequencial para calcular se eh palindrome ou nao*/
 	}
