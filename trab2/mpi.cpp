@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <string.h>
 
 #define NUMBER_OF_NODES 13
 #define SIZE_OF_SEGMENT (int)ceil(54261766/NUMBER_OF_NODES)
@@ -14,7 +15,6 @@ int main(int argc, char **argv)
 	char *inmsg[NUMBER_OF_NODES];
 	char fileName[30], aux;
 	register unsigned long int count=0, count2=0, incrementOfSize=1;
-	unsigned long int sizeOfVector[NUMBER_OF_NODES];
 	FILE *file;
 	MPI_Status Stat;
 
@@ -32,7 +32,8 @@ int main(int argc, char **argv)
 	 */
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 	if (rank == 0){
-		file = stdin;
+//		file = stdin;
+		file = fopen("wikipedia.txt", "r");
 		if(!file){
 	     	printf("Arquivo de entrada nao encontrado!\n");
 	        exit(1);
@@ -43,10 +44,9 @@ int main(int argc, char **argv)
 			
 		for(count=0; count < NUMBER_OF_NODES; count++)
 			outmsg[count][0] = '\0';
-		
+
 		/*para cada vetor, completa com trechos do texto, chegando ate o seu máximo, depois disso, continua a inserir dados no vetor até que seja 			encontrado um final de frase(no caso ponto, ponto de exclamação, interrogação ou ENTER)*/
-		for(count2=0; count2 < NUMBER_OF_NODES; count2++)
-        {
+		for(count2=0; count2 < NUMBER_OF_NODES; count2++){		
 			for(count=0;!feof(file) && count < SIZE_OF_SEGMENT; count++){
 				fscanf(file, "%c", &outmsg[count2][count]);
 			}
@@ -62,27 +62,29 @@ int main(int argc, char **argv)
 				count++;
 			}
 			incrementOfSize = 1;
-			outmsg[count2][count] = '\0';
-			sizeOfVector[count2] = count; 
 		}
 		for(dest = 1; dest <= NUMBER_OF_NODES; dest++){
-			rc = MPI_Send(&outmsg[dest-1], sizeOfVector[dest-1], MPI_CHAR, dest, tag, MPI_COMM_WORLD);
+			rc = MPI_Send(&outmsg[dest-1], strlen(outmsg[dest-1]), MPI_CHAR, dest, tag, MPI_COMM_WORLD);
 		}
 	}
 	else{
 		source = 0;	
 		printf("rank:%d\n", rank);	
-		int tamanho;
-		MPI_Get_count(&Stat,MPI_CHAR,&tamanho);
-
+		int tamanho = 54261766;
+		//MPI_Get_count(&Stat,MPI_CHAR,&tamanho);
+		//printf("%d", tamanho);
 		/*assim eu garanto que toda msg que eu receber poderá ser armazenada no vetor inmsg*/
 		inmsg[rank-1] = (char*) malloc (tamanho*sizeof(char));
-//		printf("%d\n", tamanho);
-				
-		rc = MPI_Recv(&inmsg[rank-1], tamanho, MPI_CHAR, source, tag, MPI_COMM_WORLD, &Stat);
-	
-		
 
+		rc = MPI_Recv(&inmsg[rank-1], tamanho, MPI_CHAR, source, tag, MPI_COMM_WORLD, &Stat);
+		
+/*
+		FILE *fileout;
+		char vai[5];
+		sprintf(vai, "%i", rank);  
+		fileout = fopen(vai, "w");
+		fprintf(fileout, "%s\n", inmsg[rank-1]);		
+*/
 		/*aqui chama a funcao sequencial para calcular se eh palindrome ou nao*/
 	}
 
