@@ -27,7 +27,8 @@ int main(int argc, const char * argv[])
     char mode = 'a';
     
     //Gera a lista de numeros primos
-    sievePrimeNumbers(&primeList, 5000);
+    sievePrimeNumbers(&primeList, 20000);
+    //saveList(&primeList, "prime-numbers.txt");
     
     if(argc >= 2)
     {

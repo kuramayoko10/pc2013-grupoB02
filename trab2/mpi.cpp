@@ -45,7 +45,8 @@ int main(int argc, char **argv)
 			outmsg[count][0] = '\0';
 		
 		/*para cada vetor, completa com trechos do texto, chegando ate o seu máximo, depois disso, continua a inserir dados no vetor até que seja 			encontrado um final de frase(no caso ponto, ponto de exclamação, interrogação ou ENTER)*/
-		for(count2=0; count2 < NUMBER_OF_NODES; count2++){
+		for(count2=0; count2 < NUMBER_OF_NODES; count2++)
+        {
 			for(count=0;!feof(file) && count < SIZE_OF_SEGMENT; count++){
 				fscanf(file, "%c", &outmsg[count2][count]);
 			}
