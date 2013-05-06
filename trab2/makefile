@@ -1,18 +1,15 @@
-CFLAGS=-march=native -mtune=native -Os -Wall -Wextra -pedantic
+CFLAGS=-march=native -mtune=native -Wall -Wextra -pedantic
 
 all: seq omp mpi 
 
-seq: seq.cpp common.h
-	g++ $(CFLAGS) $< -o seq
+seq: seq.c common.h
+	gcc $(CFLAGS) -std=c99 $< -o seq -lm
 
-omp: omp.cpp common.h
-	g++ $(CFLAGS) -fopenmp $< -o omp
+omp: omp.c common.h
+	gcc $(CFLAGS) -std=c99 -g -fopenmp $< -o omp -lm
 
 mpi: mpi.cpp common.h
-	mpig++ $(CFLAGS) $< -o mpi
-
-utest: utest.c all
-	$(CC) $(CCFLAGS) $(CLFLAGS) -pg $< hmap.o -o utest
+	mpig++ $(CFLAGS) $< -o mpi -lm
 
 #Removes all tildes ending files, objects codes and test executable
 clean:

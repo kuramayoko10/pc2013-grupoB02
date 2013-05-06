@@ -5,8 +5,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
-#include <vector>
-#include <string>
+#include <ctype.h>
 
 #define SUCCESS 0
 #define FAILURE -1
@@ -24,9 +23,16 @@
 #define prefetch(x)			do {}while(0);
 #endif
 
+
+#define BIG_TEXT_SIZE 54261766
+#define SMALL_TEXT_SIZE 5344213
+
 #ifndef __cplusplus
 typedef unsigned char bool;
-#endif
+#else
+#include <vector>
+#include <string>
+
 
 typedef struct
 {
@@ -39,5 +45,61 @@ void sievePrimeNumbers(std::vector<int> *primeList, unsigned int limit);
 void loadList(std::vector<int> *primeList, const char* filename);
 void saveList(std::vector<int> *primeList, const char* filename);
 bool isPrimeNumber(std::vector<int> *primeList, unsigned int number);
+#endif
+
+#ifdef _OPENMP
+#include <omp.h>
+#else
+#define omp_get_num_procs(X) 1
+#endif
+
+inline static bool word_is_palin(char *s, unsigned n)
+{
+	register int i, j;
+	if (n<=3)
+		return FALSE;
+	for (i=0, j=n-1; i<=j; ++i, --j)
+	{
+		if (s[i] != s[j])
+			return FALSE;
+	}
+	return TRUE;
+
+}
+
+inline static unsigned word_sum(char *s, unsigned n)
+{
+	register unsigned i, sum;
+	for (i=0, sum=0; i<n; ++i, sum+=s[i]);
+	return sum;
+}
+
+inline static bool phrase_is_palin(char *s, unsigned n)
+{
+	register int i, j;
+	if (n<=3)
+		return FALSE;
+	for (i=0, j=n-1; i<=j; ++i, --j)
+	{
+		while (isspace(s[i])&&i<=j)
+			++i;
+		while (isspace(s[j])&&i<=j)
+			--j;
+		if (s[i] != s[j])
+			return FALSE;
+	}
+	return TRUE;
+}
+
+inline static bool is_prime(unsigned n)
+{
+	register unsigned i, sqrtn = (unsigned) sqrt(n);
+	if (n%2 == 0)
+		return FALSE;
+	for (i=3; i<sqrtn; i+=2)
+		if (n%i == 0)
+			return FALSE;
+	return TRUE; 
+}
 
 #endif

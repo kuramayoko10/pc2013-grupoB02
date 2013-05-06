@@ -270,6 +270,3 @@ int sumASCII(const char *str)
     return sum;
 }
 
-
-
-
