@@ -1,6 +1,7 @@
 #include "common.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 #define STATE_ALNUM 0
 #define STATE_SPACE 1
@@ -22,10 +23,10 @@ int main() {
 	register unsigned i, j;
 	unsigned div_num, block_size;
 	unsigned word_palin_count=0, phrase_palin_count=0, prime_count=0;
+	clock_t begin, end;
 	div_num = omp_get_num_procs();
 	block_size = BIG_TEXT_SIZE/div_num;
 	file = fopen("big_text", "r");
-	word_is_palin("racecar", 7);
 	if (file == NULL)
 		return FAILURE;
 	text = malloc(BIG_TEXT_SIZE*sizeof(char));
@@ -34,6 +35,7 @@ int main() {
 	for (i=0; i<BIG_TEXT_SIZE; ++i)
 		text[i] = getc(file);
 	/* For each block*/ 
+	begin = clock();
 #pragma omp parallel for private(i, j, word_size, phrase_size, word, phrase, cur_state)
 	for (i=0; i<div_num; i++)
 	{
@@ -115,8 +117,7 @@ int main() {
 					phrase_size=0;
 				}
 				else if (cur_state == STATE_SPACE)
-				{
-					if (phrase_is_palin(phrase, phrase_size))
+				{ if (phrase_is_palin(phrase, phrase_size))
 						++phrase_palin_count;
 					phrase+=phrase_size+1;
 					phrase_size=0;
@@ -131,6 +132,8 @@ int main() {
 			}
 		}
 	}
+	end = clock();
+	printf("Took %f seconds.\n ", (float) (end-begin)/CLOCKS_PER_SEC);
 	printf("wp: %u pp: %u p: %u\n", word_palin_count, phrase_palin_count, 
 			prime_count);
 	fclose(file);
