@@ -18,11 +18,6 @@ int main(int argc, char **argv)
 	FILE *file;
 	MPI_Status Stat;
 
-
-	//printf("Digite o nome do arquivo de entrada.\n");
-	//scanf("%s", fileName);
-	//file = fopen(fileName, "r");
-
 	/*
 	 * Inicia uma sessão MPI
 	 */
@@ -32,7 +27,6 @@ int main(int argc, char **argv)
 	 */
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 	if (rank == 0){
-//		file = stdin;
 		file = fopen("wikipedia.txt", "r");
 		if(!file){
 	     	printf("Arquivo de entrada nao encontrado!\n");
@@ -41,7 +35,6 @@ int main(int argc, char **argv)
 		/*inicializa os vetores de caracteres para enviar a msg*/
 		for(count=0; count < NUMBER_OF_NODES; count++)
 			outmsg[count] = (char*) malloc (SIZE_OF_SEGMENT*sizeof(char ));
-			
 		for(count=0; count < NUMBER_OF_NODES; count++)
 			outmsg[count][0] = '\0';
 
@@ -63,28 +56,26 @@ int main(int argc, char **argv)
 			}
 			incrementOfSize = 1;
 		}
+
 		for(dest = 1; dest <= NUMBER_OF_NODES; dest++){
-			rc = MPI_Send(&outmsg[dest-1], strlen(outmsg[dest-1]), MPI_CHAR, dest, tag, MPI_COMM_WORLD);
+			rc = MPI_Send(outmsg[dest-1], strlen(outmsg[dest-1]), MPI_CHAR, dest, tag, MPI_COMM_WORLD);
 		}
 	}
 	else{
 		source = 0;	
 		printf("rank:%d\n", rank);	
 		int tamanho = 54261766;
-		//MPI_Get_count(&Stat,MPI_CHAR,&tamanho);
-		//printf("%d", tamanho);
-		/*assim eu garanto que toda msg que eu receber poderá ser armazenada no vetor inmsg*/
 		inmsg[rank-1] = (char*) malloc (tamanho*sizeof(char));
 
-		rc = MPI_Recv(&inmsg[rank-1], tamanho, MPI_CHAR, source, tag, MPI_COMM_WORLD, &Stat);
-		
-/*
+		rc = MPI_Recv(inmsg[rank-1], tamanho, MPI_CHAR, source, tag, MPI_COMM_WORLD, &Stat);
+
+//aqui so foi para ver se ele esta recebendo as msg certas
 		FILE *fileout;
 		char vai[5];
 		sprintf(vai, "%i", rank);  
 		fileout = fopen(vai, "w");
 		fprintf(fileout, "%s\n", inmsg[rank-1]);		
-*/
+
 		/*aqui chama a funcao sequencial para calcular se eh palindrome ou nao*/
 	}
 
