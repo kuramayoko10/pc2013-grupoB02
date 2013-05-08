@@ -5,21 +5,17 @@
 #include <string.h>
 
 #define NUMBER_OF_NODES 13
-#define SIZE_OF_SEGMENT (int)ceil(54261766/NUMBER_OF_NODES)
 
 
 int main(int argc, char **argv)
 {
-	int numtasks, rank, rc, dest, source, tag=1;
+	int numtasks, rank, rc, dest, source, tag=1, SIZE_OF_SEGMENT;
 	char *outmsg[NUMBER_OF_NODES]; 
 	char *inmsg[NUMBER_OF_NODES];
 	char fileName[30], aux;
 	register unsigned long int count=0, count2=0, incrementOfSize=1;
 	FILE *file;
 	MPI_Status Stat;
-    
-    //for(int i = 0; i < argc; i++)
-    //    printf("argv[%d] %s\n", i, argv[i]);
 
 	/*
 	 * Inicia uma sessão MPI
@@ -31,6 +27,10 @@ int main(int argc, char **argv)
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 	if (rank == 0){
 		file = fopen(argv[1], "r");
+		if(!strcmp(argv[1], "wikipedia.txt"))
+			SIZE_OF_SEGMENT = (int)ceil(54261766/NUMBER_OF_NODES);
+		else
+			SIZE_OF_SEGMENT = (int)ceil(5344213/NUMBER_OF_NODES);
 		if(!file){
 	     	printf("Arquivo de entrada nao encontrado!\n");
 	        exit(1);
