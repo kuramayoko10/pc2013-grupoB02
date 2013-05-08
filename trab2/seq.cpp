@@ -68,7 +68,7 @@ int main(int argc, const char * argv[])
         {
             switch(mode)
             {
-                case 'S':
+                case 'L':
                     //Faz a leitura da proxima palavra, descartando pontuacoes
                     /*if(readWordFromFile(inputFile, smallBuffer))
                     {
@@ -91,7 +91,7 @@ int main(int argc, const char * argv[])
                     }
                     break;
                     
-                case 'L':
+                case 'S':
                     //Faz a leitura da proxima frase (terminando em ".!?\n"
                     //while(readSentenceFromFile(inputFile, bigBuffer, &palindromes, &primeList))
                     while((ret = readSentenceFromBuffer(fileBuffer, bigBuffer, &palindromes, &primeList)) != 0)
@@ -182,7 +182,7 @@ int readWordFromBuffer(char *buffer, char *word)
     word[w] = '\0';
     i++;
     
-    printf("i: %d\n", i);
+    //printf("i: %d\n", i);
     
     if(i >= strlen(buffer))
         return 0;
