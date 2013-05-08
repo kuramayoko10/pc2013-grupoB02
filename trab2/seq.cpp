@@ -18,7 +18,7 @@ int readSentenceFromFile(FILE *fp, char *buffer, vector<Palindrome> *palindromes
 int readSentenceFromBuffer(char *buffer, char *sentence, vector<Palindrome> *palindromes, vector<int> *primeList);
 int addPalindrome(vector<Palindrome> *palindromes, string word, vector<int> *primeList, char mode);
 int sumASCII(const char *str);
-void readFileToBuffer(FILE *fp, char *buffer);
+void readFileToBuffer(FILE *fp, char *buffer, int size);
 
 
 int main(int argc, const char * argv[])
@@ -26,10 +26,11 @@ int main(int argc, const char * argv[])
     vector<int> primeList;
     vector<Palindrome> palindromes;
     FILE *inputFile;
-    char smallBuffer[32];
+    char smallBuffer[64];
     char bigBuffer[2048];
     char mode = 'a';
     char *fileBuffer;
+    //char fileBuffer[6000000];
     clock_t startTimer, stopTimer;
     int ret = 0;
     
@@ -56,8 +57,8 @@ int main(int argc, const char * argv[])
         
         //Buffer de 64MB
         startTimer = clock();
-        fileBuffer = (char*)malloc(sizeof(char)*64000000);
-        readFileToBuffer(inputFile, fileBuffer);
+        fileBuffer = (char*)malloc(sizeof(char)*6000000);
+        readFileToBuffer(inputFile, fileBuffer, 5400000);
         stopTimer = clock();
         printf("Tempo Processar Arquivo: %lf\n", (double)(stopTimer-startTimer)/CLOCKS_PER_SEC);
         
@@ -79,13 +80,14 @@ int main(int argc, const char * argv[])
                             int pos = addPalindrome(&palindromes, smallBuffer, NULL, 'S');
                         }
                     }*/
-                    if(readWordFromBuffer(fileBuffer, smallBuffer))
+                    while((ret = readWordFromBuffer(fileBuffer, smallBuffer)) != 0)
                     {
-                        if(isPalindrome(smallBuffer))
-                        {
-                            //Adiciona o palindromo ao vector de palindromos
-                            int pos = addPalindrome(&palindromes, smallBuffer, NULL, 'S');
-                        }
+                        if(ret == 1)
+                            if(isPalindrome(smallBuffer))
+                            {
+                                //Adiciona o palindromo ao vector de palindromos
+                                int pos = addPalindrome(&palindromes, smallBuffer, NULL, 'S');
+                            }
                     }
                     break;
                     
@@ -167,18 +169,20 @@ int readWordFromFile(FILE *fp, char *buffer)
 
 int readWordFromBuffer(char *buffer, char *word)
 {
-    int i = 0;
+    static int i = 0;
+    int w = 0;
     char read;
-    
-    word[0] = '\0';
     
     read = buffer[i];
     while(!isSymbol(read) && !isspace(read))
     {
-        word[i++] = read;
-        read = buffer[i];
+        word[w++] = read;
+        read = buffer[++i];
     }
-    word[i] = '\0';
+    word[w] = '\0';
+    i++;
+    
+    printf("i: %d\n", i);
     
     if(i >= strlen(buffer))
         return 0;
@@ -283,6 +287,8 @@ int readSentenceFromBuffer(char *buffer, char *sentence, vector<Palindrome> *pal
     sentence[s] = '\0';
     i++;
     
+    printf("I: %d\n", i);
+    
     if(i >= strlen(buffer))
         return 0;
     
@@ -351,7 +357,8 @@ int addPalindrome(vector<Palindrome> *palindromes, string word, vector<int> *pri
     //Verifica se a palavra ja foi adicionada
     while(i < size && ret < 0)
     {
-        ret = word.compare(palindromes->at(i++).word);
+        ret = word.compare(palindromes->at(i).word);
+        i++;
     }
     
     //Adiciona o contador
@@ -402,12 +409,13 @@ int sumASCII(const char *str)
     return sum;
 }
 
-void readFileToBuffer(FILE *fp, char *buffer)
+void readFileToBuffer(FILE *fp, char *buffer, int size)
 {
     //char *read = (char*)malloc(sizeof(char)*1048576);
     int i = 0;
     
-    while(!feof(fp))
+    //while(!feof(fp))
+    while(i < size)
     {
         buffer[i++] = fgetc(fp);
     }
