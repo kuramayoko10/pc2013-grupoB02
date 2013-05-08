@@ -287,7 +287,7 @@ int readSentenceFromBuffer(char *buffer, char *sentence, vector<Palindrome> *pal
     sentence[s] = '\0';
     i++;
     
-    printf("I: %d\n", i);
+    //printf("I: %d\n", i);
     
     if(i >= strlen(buffer))
         return 0;
