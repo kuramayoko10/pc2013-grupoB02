@@ -20,6 +20,8 @@ int addPalindrome(vector<Palindrome> *palindromes, string word, vector<int> *pri
 int sumASCII(const char *str);
 void readFileToBuffer(FILE *fp, char *buffer);
 
+int wpCount = 0;
+int spCount = 0;
 
 int main(int argc, const char * argv[])
 {
@@ -56,8 +58,8 @@ int main(int argc, const char * argv[])
         
         //Buffer de 64MB
         startTimer = clock();
-        fileBuffer = (char*)malloc(sizeof(char)*64000000);
-        readFileToBuffer(inputFile, fileBuffer);
+        //fileBuffer = (char*)malloc(sizeof(char)*64000000);
+        //readFileToBuffer(inputFile, fileBuffer);
         stopTimer = clock();
         printf("Tempo Processar Arquivo: %lf\n", (double)(stopTimer-startTimer)/CLOCKS_PER_SEC);
         
@@ -81,14 +83,15 @@ int main(int argc, const char * argv[])
                     }*/
                     while(ret != 0)
                     {
-                        ret = readWordFromBuffer(fileBuffer, smallBuffer);
-                        //ret = readWordFromFile(inputFile, smallBuffer);
+                        //ret = readWordFromBuffer(fileBuffer, smallBuffer);
+                        ret = readWordFromFile(inputFile, smallBuffer);
                         
                         if(ret == 1)
                             if(isPalindrome(smallBuffer))
                             {
                                 //Adiciona o palindromo ao vector de palindromos
                                 int pos = addPalindrome(&palindromes, smallBuffer, &primeList, 'S');
+                                wpCount++;
                             }
                     }
                     break;
@@ -105,6 +108,9 @@ int main(int argc, const char * argv[])
                             if(isPalindrome(bigBuffer))
                             {
                                 int pos = addPalindrome(&palindromes, bigBuffer, &primeList, 'L');
+                                spCount++;
+                                
+                                printf("frase: %s\n", bigBuffer);
                             }
                     }
                     break;
@@ -127,7 +133,7 @@ int main(int argc, const char * argv[])
     
     startTimer = clock();
     //printf("Palindrome - %s\n", argv[1]);
-    for(int i = 0; i < palindromes.size(); i++)
+    /*for(int i = 0; i < palindromes.size(); i++)
     {
         printf("%s - %d occurrences", palindromes[i].word.c_str(), palindromes[i].count);
         
@@ -135,7 +141,9 @@ int main(int argc, const char * argv[])
             printf(" - prime number %d", palindromes[i].primeNumber);
         
         printf("\n");
-    }
+    }*/
+    printf("Word Palindromes: %d (%d unique)\n", wpCount, palindromes.size());
+    printf("Sentence Palindromes: %d\n", spCount);
     stopTimer = clock();
     
     printf("Tempo Impressao dos Resultados: %lf\n", (double)(stopTimer-startTimer)/CLOCKS_PER_SEC);
@@ -194,6 +202,8 @@ int readWordFromBuffer(char *buffer, char *word)
     char read;
     clock_t start, stop;
     
+    word[0] = '\0';
+    
     start = clock();
     read = buffer[i];
     while(!isSymbol(read) && !isspace(read))
@@ -246,7 +256,10 @@ int readSentenceFromFile(FILE *fp, char *buffer, vector<Palindrome> *palindromes
                 //printf("%d - %s\n", i, word);
                 
                 if(isPalindrome(word))
+                {
+                    wpCount++;
                     addPalindrome(palindromes, word, primeList, 'S');
+                }
                 
                 //printf("%s\n", word);
             }
