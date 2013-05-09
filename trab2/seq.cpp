@@ -13,34 +13,32 @@ bool isPalindrome(const char *input);
 bool isSymbol(char input);
 bool endOfSentence(char input);
 int readWordFromFile(FILE *fp, char *buffer);
-int readWordFromBuffer(char *buffer, char *word);
 int readSentenceFromFile(FILE *fp, char *buffer, vector<Palindrome> *palindromes, vector<int> *primeList);
-int readSentenceFromBuffer(char *buffer, char *sentence, vector<Palindrome> *palindromes, vector<int> *primeList);
 int addPalindrome(vector<Palindrome> *palindromes, string word, vector<int> *primeList, char mode);
 int sumASCII(const char *str);
-void readFileToBuffer(FILE *fp, char *buffer);
 
 int wpCount = 0;
 int spCount = 0;
 
+
 int main(int argc, const char * argv[])
 {
+    FILE *inputFile;
     vector<int> primeList;
     vector<Palindrome> palindromes;
-    FILE *inputFile;
-    char smallBuffer[1024];
-    char bigBuffer[10240];
+    
+    char word[1024];
+    char sentence[10240];
     char mode = 'a';
     char *fileBuffer = '\0';
+    
     clock_t startTimer, stopTimer;
     int ret = 1;
     
-    //Gera a lista de numeros primos
+    //Gera a lista de numeros primos (de 2 a 20000)
     startTimer = clock();
     sievePrimeNumbers(&primeList, 20000);
     stopTimer = clock();
-    //saveList(&primeList, "prime-numbers.txt");
-    
     printf("Tempo Criacao Crivo: %lf\n", (double)(stopTimer-startTimer)/CLOCKS_PER_SEC);
     
     if(argc >= 2)
@@ -56,62 +54,44 @@ int main(int argc, const char * argv[])
         if(strlen(argv[2]) == 1)
             mode = argv[2][0];
         
-        //Buffer de 64MB
+        //Inicia o processamento
+        //A leitura do texto eh realizada a partir do arquivo durante o algoritmo
         startTimer = clock();
-        //fileBuffer = (char*)malloc(sizeof(char)*64000000);
-        //readFileToBuffer(inputFile, fileBuffer);
-        stopTimer = clock();
-        printf("Tempo Processar Arquivo: %lf\n", (double)(stopTimer-startTimer)/CLOCKS_PER_SEC);
-        
-        //Leitura por palavra
-        startTimer = clock();
-        //while(!feof(inputFile))
         {
             switch(mode)
             {
                 case 'L':
                     //Faz a leitura da proxima palavra, descartando pontuacoes
-                    /*if(readWordFromFile(inputFile, smallBuffer))
-                    {
-                        if(isPalindrome(smallBuffer))
-                        {
-                            //printf("%s\n", smallBuffer);
-                            
-                            //Adiciona o palindromo ao vector de palindromos
-                            int pos = addPalindrome(&palindromes, smallBuffer, NULL, 'S');
-                        }
-                    }*/
                     while(ret != 0)
                     {
-                        //ret = readWordFromBuffer(fileBuffer, smallBuffer);
-                        ret = readWordFromFile(inputFile, smallBuffer);
+                        ret = readWordFromFile(inputFile, word);
                         
                         if(ret == 1)
-                            if(isPalindrome(smallBuffer))
+                        {
+                            if(isPalindrome(word))
                             {
                                 //Adiciona o palindromo ao vector de palindromos
-                                int pos = addPalindrome(&palindromes, smallBuffer, &primeList, 'S');
+                                addPalindrome(&palindromes, word, &primeList, 'S');
                                 wpCount++;
                             }
+                        }
                     }
                     break;
                     
                 case 'S':
-                    //Faz a leitura da proxima frase (terminando em ".!?\n"
-                    //while(readSentenceFromFile(inputFile, bigBuffer, &palindromes, &primeList))
+                    //Faz a leitura da proxima frase (terminando em ".!?\n")
                     while(ret != 0)
                     {
-                        //ret = readSentenceFromBuffer(fileBuffer, bigBuffer, &palindromes, &primeList);
-                        ret = readSentenceFromFile(inputFile, bigBuffer, &palindromes, &primeList);
+                        ret = readSentenceFromFile(inputFile, sentence, &palindromes, &primeList);
                         
                         if(ret == 1)
-                            if(isPalindrome(bigBuffer))
+                        {
+                            if(isPalindrome(sentence))
                             {
-                                int pos = addPalindrome(&palindromes, bigBuffer, &primeList, 'L');
+                                addPalindrome(&palindromes, sentence, &primeList, 'L');
                                 spCount++;
-                                
-                                printf("frase: %s\n", bigBuffer);
                             }
+                        }
                     }
                     break;
                     
@@ -129,11 +109,10 @@ int main(int argc, const char * argv[])
         exit(1);
     }
     stopTimer = clock();
-    printf("Tempo Processar Palindromos: %lf\n", (double)(stopTimer-startTimer)/CLOCKS_PER_SEC);
+    printf("Tempo Processar Arquivo+Palindromos: %lf\n", (double)(stopTimer-startTimer)/CLOCKS_PER_SEC);
     
     startTimer = clock();
-    //printf("Palindrome - %s\n", argv[1]);
-    /*for(int i = 0; i < palindromes.size(); i++)
+    for(int i = 0; i < palindromes.size(); i++)
     {
         printf("%s - %d occurrences", palindromes[i].word.c_str(), palindromes[i].count);
         
@@ -141,8 +120,8 @@ int main(int argc, const char * argv[])
             printf(" - prime number %d", palindromes[i].primeNumber);
         
         printf("\n");
-    }*/
-    printf("Word Palindromes: %d (%d unique)\n", wpCount, palindromes.size());
+    }
+    printf("Word Palindromes: %d (%lu unique)\n", wpCount, palindromes.size());
     printf("Sentence Palindromes: %d\n", spCount);
     stopTimer = clock();
     
@@ -161,11 +140,8 @@ int readWordFromFile(FILE *fp, char *buffer)
 {
     char read;
     int i = 0;
-    clock_t start, stop;
     
     buffer[0] = '\0';
-    
-    start = clock();
     read = fgetc(fp);
     
     while(!isSymbol(read) && !isspace(read))
@@ -173,9 +149,6 @@ int readWordFromFile(FILE *fp, char *buffer)
         buffer[i++] = read;
         read = fgetc(fp);
     }
-    stop = clock();
-    
-    //printf("Tempo Processar File: %lf\n", (double)(stop-start)/CLOCKS_PER_SEC);
     
     buffer[i] = '\0';
     
@@ -184,8 +157,6 @@ int readWordFromFile(FILE *fp, char *buffer)
     //Artigos 'a' ou palavras comprimidas "we'll" nao nos interessa
     if(strlen(buffer) > 2)
     {
-        //printf("%d - %s\n", i, buffer);
-        
         return 1;
     }
     
@@ -194,45 +165,6 @@ int readWordFromFile(FILE *fp, char *buffer)
     
     return 2;
 }
-
-int readWordFromBuffer(char *buffer, char *word)
-{
-    static int i = 0;
-    int w = 0;
-    char read;
-    clock_t start, stop;
-    
-    word[0] = '\0';
-    
-    start = clock();
-    read = buffer[i];
-    while(!isSymbol(read) && !isspace(read))
-    {
-        word[w++] = read;
-        read = buffer[++i];
-    }
-    stop = clock();
-    
-    //printf("Tempo Processar Memoria: %lf\n", (double)(stop-start)/CLOCKS_PER_SEC);
-    
-    word[w] = '\0';
-    i++;
-    
-    if(i >= strlen(buffer))
-        return 0;
-    
-    //Consideramos palindromos apenas as palavras de mais de 3 caracteres.
-    //Pois estas tem um significado claro na lingua
-    //Artigos 'a' ou palavras comprimidas "we'll" nao nos interessa
-    if(strlen(word) >= 3)
-    {
-        printf("%d - %s\n", i, word);
-        return 1;
-    }
-    
-    return 2;
-}
-
 
 int readSentenceFromFile(FILE *fp, char *buffer, vector<Palindrome> *palindromes, vector<int> *primeList)
 {
@@ -276,74 +208,16 @@ int readSentenceFromFile(FILE *fp, char *buffer, vector<Palindrome> *palindromes
     }
     buffer[i] = '\0';
     
+    //Consideramos palindromos apenas as palavras de mais de 3 caracteres.
+    //Pois estas tem um significado claro na lingua
+    //Artigos 'a' ou palavras comprimidas "we'll" nao nos interessa
+    if(strlen(buffer) >= 3)
+        return 1;
+    
     if(feof(fp))
         return 0;
     
-    //Consideramos palindromos apenas as palavras de mais de 3 caracteres.
-    //Pois estas tem um significado claro na lingua
-    //Artigos 'a' ou palavras comprimidas "we'll" nao nos interessa
-    if(strlen(buffer) > 2)
-        return 1;
-    
     return 2;
-}
-
-int readSentenceFromBuffer(char *buffer, char *sentence, vector<Palindrome> *palindromes, vector<int> *primeList)
-{
-    char read;
-    char word[128] = "\0";
-    static int i = 0;
-    int s = 0;
-    int w = 0;
-    
-    sentence[0] = '\0';
-    read = buffer[i];
-    
-    //printf("size: %lu\n", strlen(buffer));
-    
-    while(!endOfSentence(read) && i < strlen(buffer))
-    {
-        if(isSymbol(read) || isspace(read))
-        {
-            //Processa a palavra anterior e descarta a pontuacao/espaco_branco
-            word[w] = '\0';
-            
-            if(w >= 3)
-            {
-                printf("%d - %s\n", i, word);
-                
-                if(isPalindrome(word))
-                    addPalindrome(palindromes, word, primeList, 'S');
-                
-                //printf("%s\n", word);
-            }
-            
-            w = 0;
-        }
-        else
-        {
-            sentence[s++] = read;
-            word[w++] = read;
-        }
-        
-        read = buffer[++i];
-    }
-    sentence[s] = '\0';
-    i++;
-    
-    //printf("I: %d\n", i);
-    
-    if(i >= strlen(buffer))
-        return 0;
-    
-    //Consideramos palindromos apenas as palavras de mais de 3 caracteres.
-    //Pois estas tem um significado claro na lingua
-    //Artigos 'a' ou palavras comprimidas "we'll" nao nos interessa
-    if(strlen(sentence) > 2)
-        return 1;
-    
-    return 2;
-
 }
 
 bool isSymbol(char input)
@@ -427,15 +301,9 @@ int addPalindrome(vector<Palindrome> *palindromes, string word, vector<int> *pri
         {
             int num = sumASCII(word.c_str());
             
-            clock_t startTimer = clock();
             if(isPrimeNumber(primeList, num))
             {
-                clock_t stopTimer = clock();
-                //printf("Tempo Encontrar Primo: %lf\n", (double)(stopTimer-startTimer)/CLOCKS_PER_SEC);
-                
                 palindromes->at(i-1).primeNumber = num;
-                
-                //printf("%s\n", word.c_str());
             }
         }
     }
@@ -453,17 +321,4 @@ int sumASCII(const char *str)
     return sum;
 }
 
-void readFileToBuffer(FILE *fp, char *buffer)
-{
-    //char *read = (char*)malloc(sizeof(char)*1048576);
-    int i = 0;
-    
-    while(!feof(fp))
-    {
-        //buffer[i++] = fgetc(fp);
-        fscanf(fp, "%c", &buffer[i]);
-        i++;
-    }
-    buffer[i] = '\0';
-}
 
