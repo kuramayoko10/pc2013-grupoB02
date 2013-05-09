@@ -3,18 +3,13 @@
 #include <stdlib.h>
 #include <time.h>
 
+
 #define STATE_ALNUM 0
 #define STATE_SPACE 1
 #define STATE_PUNCT 2
 
-void prn(char *s, unsigned n)
-{
-	unsigned i;
-	for (i=0; i<n; i++)
-		putchar(s[i]);
-}
 
-int main() {
+int main(int argc, char **argv) {
 
 	FILE *file;
 	char *text;
@@ -24,16 +19,34 @@ int main() {
 	unsigned div_num, block_size;
 	unsigned word_palin_count=0, phrase_palin_count=0, prime_count=0;
 	clock_t begin, end;
+	char mode;
 	div_num = omp_get_num_procs();
-	block_size = BIG_TEXT_SIZE/div_num;
-	file = fopen("big_text", "r");
-	if (file == NULL)
-		return FAILURE;
-	text = malloc(BIG_TEXT_SIZE*sizeof(char));
-	if (text == NULL)
-		return FAILURE;
-	for (i=0; i<BIG_TEXT_SIZE; ++i)
-		text[i] = getc(file);
+	if (argc != 2)
+		return 0;
+	if (strcmp(argv[1], "big_text") == 0)
+	{
+		mode = BIG_MODE;
+		block_size = BIG_TEXT_SIZE/div_num;	
+		file = fopen(argv[1], "r");
+		if (file == NULL)
+			return FAILURE;
+		text = malloc(BIG_TEXT_SIZE*sizeof(char));
+		for (i=0; i<BIG_TEXT_SIZE; i++)
+			text[i] = tolower(getc(file));
+	}
+	else if (strcmp(argv[1], "small_text") == 0)
+	{
+		mode = SMALL_MODE;
+		block_size = SMALL_TEXT_SIZE/div_num;	
+		file = fopen(argv[1], "r");
+		if (file == NULL)
+			return FAILURE;
+		text = malloc(SMALL_TEXT_SIZE*sizeof(char));
+		for (i=0; i<SMALL_TEXT_SIZE; i++)
+			text[i] = tolower(getc(file));
+	}
+	else return 0;
+	fclose (file);
 	/* For each block*/ 
 	begin = clock();
 #pragma omp parallel for private(i, j, word_size, phrase_size, word, phrase, cur_state)
@@ -43,8 +56,7 @@ int main() {
 		phrase = text+i*block_size;
 		word = phrase;
 		if (i != 0) /* Finds next phrase beggining */
-			for (j=0; j<block_size&&(isspace(phrase[j])
-						||isalnum(phrase[j])); j++);	
+			for (j=0; j<block_size&&(isspace(phrase[j])||isalnum(phrase[j])); j++);	
 		word_size=1, phrase_size=1;
 		for (j=0; j<block_size||cur_state!=STATE_PUNCT; j++)
 		{
@@ -76,7 +88,7 @@ int main() {
 					{
 #pragma omp atomic
 						++word_palin_count;
-						if (is_prime(word_sum(word, word_size)))
+						if (is_prime(word_sum(word, word_size), mode))
 #pragma omp atomic
 							++prime_count;
 					}
@@ -104,11 +116,11 @@ int main() {
 					{
 #pragma omp atomic
 						++word_palin_count;
-						if (is_prime(word_sum(word, word_size)))
+						if (is_prime(word_sum(word, word_size), mode))
 #pragma omp atomic
 							++prime_count;
 					}
-					if (phrase_is_palin(phrase, phrase_size))
+					if (phrase_is_palin(phrase, phrase_size, mode))
 #pragma omp atomic
 							++phrase_palin_count;
 					word+=word_size+1;
@@ -117,7 +129,7 @@ int main() {
 					phrase_size=0;
 				}
 				else if (cur_state == STATE_SPACE)
-				{ if (phrase_is_palin(phrase, phrase_size))
+				{ if (phrase_is_palin(phrase, phrase_size, mode))
 						++phrase_palin_count;
 					phrase+=phrase_size+1;
 					phrase_size=0;
@@ -136,7 +148,6 @@ int main() {
 	printf("Took %f seconds.\n ", (float) (end-begin)/CLOCKS_PER_SEC);
 	printf("wp: %u pp: %u p: %u\n", word_palin_count, phrase_palin_count, 
 			prime_count);
-	fclose(file);
 	free(text);
 	return SUCCESS;
 }

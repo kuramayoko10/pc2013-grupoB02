@@ -26,6 +26,8 @@
 
 #define BIG_TEXT_SIZE 54261766
 #define SMALL_TEXT_SIZE 5344213
+#define SMALL_MODE 1
+#define BIG_MODE 2
 
 #ifndef __cplusplus
 typedef unsigned char bool;
@@ -74,10 +76,10 @@ inline static unsigned word_sum(char *s, unsigned n)
 	return sum;
 }
 
-inline static bool phrase_is_palin(char *s, unsigned n)
+inline static bool phrase_is_palin(char *s, unsigned n, char mode)
 {
 	register int i, j;
-	if (n<=3)
+	if (n<=3||mode==BIG_MODE)
 		return FALSE;
 	for (i=0, j=n-1; i<=j; ++i, --j)
 	{
@@ -91,10 +93,10 @@ inline static bool phrase_is_palin(char *s, unsigned n)
 	return TRUE;
 }
 
-inline static bool is_prime(unsigned n)
-{
+inline static bool is_prime(unsigned n, char mode)
+{ 
 	register unsigned i, sqrtn = (unsigned) sqrt(n);
-	if (n%2 == 0)
+	if (n%2 == 0||mode==SMALL_MODE)
 		return FALSE;
 	for (i=3; i<sqrtn; i+=2)
 		if (n%i == 0)
