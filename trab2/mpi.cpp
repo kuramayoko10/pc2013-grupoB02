@@ -8,24 +8,28 @@
 #include "common.h"
 
 #define NUMBER_OF_NODES 13
+#define STATE_ALNUM 0
+#define STATE_SPACE 1
+#define STATE_PUNCT 2
 
 using namespace std;
+
+int wpCount = 0, spCount = 0;
 
 bool isPalindrome(const char *input);
 bool isSymbol(char input);
 bool endOfSentence(char input);
-int readWordFromBuffer(char *buffer, char *word);
-int readSentenceFromBuffer(char *buffer, char *sentence, vector<Palindrome> *palindromes);
+int readWordFromFile(FILE *fp, char *buffer);
+int readSentenceFromFile(FILE *fp, char *buffer, vector<Palindrome> *palindromes, vector<int> *primeList);
 int addPalindrome(vector<Palindrome> *palindromes, string word, vector<int> *primeList, char mode);
 int sumASCII(const char *str);
-void readFileToBuffer(FILE *fp, char *buffer, int size);
 
 
 
+//int addPalindrome(vector<Palindrome> *palindromes, char *word, int wordSize);
+//void readAndProcessBuffer(char *text, int size, vector<Palindrome> *palindromes);
 
-
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv){
 	int numtasks, rank, rc, dest, source, tag=1, SIZE_OF_SEGMENT;
 	char *outmsg[NUMBER_OF_NODES]; 
 	char *inmsg[NUMBER_OF_NODES];
@@ -33,12 +37,9 @@ int main(int argc, char **argv)
 	register unsigned long int count=0, count2=0, incrementOfSize=1;
 	FILE *file;
 	MPI_Status Stat;
-	vector<int> primeList;
     vector<Palindrome> palindromes;
-
-
+	vector<int> primeList;
 	sievePrimeNumbers(&primeList, 20000);
-
 	/*
 	 * Inicia uma sessão MPI
 	 */
@@ -67,6 +68,7 @@ int main(int argc, char **argv)
 		for(count2=0; count2 < NUMBER_OF_NODES; count2++){		
 			for(count=0;!feof(file) && count < SIZE_OF_SEGMENT; count++){
 				fscanf(file, "%c", &outmsg[count2][count]);
+				outmsg[count2][count] = tolower(outmsg[count2][count]);
 			}
 			if(!feof(file))
 				fscanf(file, "%c", &aux);
@@ -76,6 +78,7 @@ int main(int argc, char **argv)
 	  				incrementOfSize++;		
 				}			
 				outmsg[count2][count] = aux;
+				outmsg[count2][count] = tolower(outmsg[count2][count]);
 				fscanf(file, "%c", &aux);
 				count++;
 			}
@@ -84,13 +87,15 @@ int main(int argc, char **argv)
 
 		for(dest = 1; dest <= NUMBER_OF_NODES; dest++){
 			rc = MPI_Send(outmsg[dest-1], strlen(outmsg[dest-1]), MPI_CHAR, dest, tag, MPI_COMM_WORLD);
+		
 		}
 	}
 	else{
 		source = 0;	
+		printf("rank:%d\n", rank);
 		int tamanho = 0;
 		int ret = 2;
-		char buffer[128];
+		char buffer[2048];
 		if(!strcmp(argv[1], "wikipedia.txt"))
 			tamanho = 54261766;
 		else
@@ -99,30 +104,37 @@ int main(int argc, char **argv)
 
 		rc = MPI_Recv(inmsg[rank-1], tamanho, MPI_CHAR, source, tag, MPI_COMM_WORLD, &Stat);
 
-//serve para mandar pro arquivo
+		//escreve o texto dividido em arquivos
 		FILE *fileout;
 		char vai[5];
 		sprintf(vai, "%i", rank);  
 		fileout = fopen(vai, "w");
 		fprintf(fileout, "%s\n", inmsg[rank-1]);	
-
-
+		fclose(fileout);
+		fileout = fopen(vai, "r");
+	
 		while(ret){
 			if(!strcmp(argv[1], "wikipedia.txt")){
-				ret = readWordFromBuffer(inmsg[rank-1], buffer);
-				if(ret == 1){
-					if(isPalindrome(buffer))
-						addPalindrome(&palindromes, buffer, &primeList, 'L');
-				}
+				ret = readWordFromFile(fileout, buffer);
+				 if(ret == 1){
+                   if(isPalindrome(buffer)){
+                   //Adiciona o palindromo ao vector de palindromos
+                      addPalindrome(&palindromes, buffer, &primeList, 'L');
+                      wpCount++;
+                   }
+                }
 			}
 			else{
-				ret = readSentenceFromBuffer(inmsg[rank-1], buffer, &palindromes);
-				if(ret == 1){
-					if(isPalindrome(buffer))
-						addPalindrome(&palindromes, buffer, &primeList, 'S');
-				}
+				ret = readSentenceFromFile(fileout, buffer, &palindromes, &primeList);
+                if(ret == 1){
+                   if(isPalindrome(buffer)){
+                       addPalindrome(&palindromes, buffer, &primeList, 'S');
+                       spCount++;
+                   }
+                }
 			}
 		}
+		fclose(fileout);
 		
 	}
 
@@ -130,9 +142,8 @@ int main(int argc, char **argv)
 	 * Finaliza a sessão MPI
 	 */
 	MPI_Finalize();
-	printf("Palindrome - %s\n", argv[1]);
-    for(int i = 0; i < palindromes.size(); i++)
-    {
+		
+	for(int i = 0; i < palindromes.size(); i++){
         printf("%s - %d occurrences", palindromes[i].word.c_str(), palindromes[i].count);
         
         if(palindromes[i].primeNumber != 0)
@@ -141,56 +152,55 @@ int main(int argc, char **argv)
         printf("\n");
     }
 	fclose(file);
+	for(count = 0; count < NUMBER_OF_NODES; count++){
+		free(inmsg[count]);
+		free(outmsg[count]);
+	}
 	return 0;
 }
 
 
-
-int readWordFromBuffer(char *buffer, char *word)
+int readWordFromFile(FILE *fp, char *buffer)
 {
-    static int i = 0;
-    int w = 0;
     char read;
+    int i = 0;
     
-    read = buffer[i];
+    buffer[0] = '\0';
+    read = fgetc(fp);
+    
     while(!isSymbol(read) && !isspace(read))
     {
-        word[w++] = read;
-        read = buffer[++i];
+        buffer[i++] = read;
+        read = fgetc(fp);
     }
-    word[w] = '\0';
-    i++;
     
-    //printf("i: %d\n", i);
-    
-    if(i >= strlen(buffer))
-        return 0;
+    buffer[i] = '\0';
     
     //Consideramos palindromos apenas as palavras de mais de 3 caracteres.
     //Pois estas tem um significado claro na lingua
     //Artigos 'a' ou palavras comprimidas "we'll" nao nos interessa
-    if(strlen(word) > 2)
+    if(strlen(buffer) > 2)
+    {
         return 1;
+    }
+    
+    if(feof(fp))
+        return 0;
     
     return 2;
 }
 
-
-
-int readSentenceFromBuffer(char *buffer, char *sentence, vector<Palindrome> *palindromes)
+int readSentenceFromFile(FILE *fp, char *buffer, vector<Palindrome> *palindromes, vector<int> *primeList)
 {
     char read;
-    char word[128] = "\0";
-    static int i = 0;
-    int s = 0;
+    char word[128];
+    int i = 0;
     int w = 0;
     
-    sentence[0] = '\0';
-    read = buffer[i];
+    buffer[0] = '\0';
+    read = fgetc(fp);
     
-    //printf("size: %lu\n", strlen(buffer));
-    
-    while(!endOfSentence(read) && i < strlen(buffer))
+    while(!endOfSentence(read) && !feof(fp))
     {
         if(isSymbol(read) || isspace(read))
         {
@@ -199,8 +209,13 @@ int readSentenceFromBuffer(char *buffer, char *sentence, vector<Palindrome> *pal
             
             if(w >= 3)
             {
+                //printf("%d - %s\n", i, word);
+                
                 if(isPalindrome(word))
-                    addPalindrome(palindromes, word, NULL, 'S');
+                {
+                    wpCount++;
+                    addPalindrome(palindromes, word, primeList, 'S');
+                }
                 
                 //printf("%s\n", word);
             }
@@ -209,28 +224,24 @@ int readSentenceFromBuffer(char *buffer, char *sentence, vector<Palindrome> *pal
         }
         else
         {
-            sentence[s++] = read;
+            buffer[i++] = read;
             word[w++] = read;
         }
         
-        read = buffer[++i];
+        read = fgetc(fp);
     }
-    sentence[s] = '\0';
-    i++;
-    
-   // printf("I: %d\n", i);
-    
-    if(i >= strlen(buffer))
-        return 0;
+    buffer[i] = '\0';
     
     //Consideramos palindromos apenas as palavras de mais de 3 caracteres.
     //Pois estas tem um significado claro na lingua
     //Artigos 'a' ou palavras comprimidas "we'll" nao nos interessa
-    if(strlen(sentence) > 2)
+    if(strlen(buffer) >= 3)
         return 1;
     
+    if(feof(fp))
+        return 0;
+    
     return 2;
-
 }
 
 bool isSymbol(char input)
@@ -314,15 +325,9 @@ int addPalindrome(vector<Palindrome> *palindromes, string word, vector<int> *pri
         {
             int num = sumASCII(word.c_str());
             
-            clock_t startTimer = clock();
             if(isPrimeNumber(primeList, num))
             {
-                clock_t stopTimer = clock();
-              //  printf("Tempo Encontrar Primo: %lf\n", (double)(stopTimer-startTimer)/CLOCKS_PER_SEC);
-                
                 palindromes->at(i-1).primeNumber = num;
-                
-                //printf("%s\n", word.c_str());
             }
         }
     }
@@ -339,23 +344,6 @@ int sumASCII(const char *str)
     
     return sum;
 }
-
-void readFileToBuffer(FILE *fp, char *buffer, int size)
-{
-    //char *read = (char*)malloc(sizeof(char)*1048576);
-    int i = 0;
-    
-    //while(!feof(fp))
-    while(i < size)
-    {
-        buffer[i++] = fgetc(fp);
-    }
-    buffer[i] = '\0';
-}
-
-
-
-
 
 
 
