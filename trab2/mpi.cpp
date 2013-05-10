@@ -3,14 +3,10 @@
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
-#include <string>
 #include <vector>
 #include "common.h"
 
 #define NUMBER_OF_NODES 13
-#define STATE_ALNUM 0
-#define STATE_SPACE 1
-#define STATE_PUNCT 2
 
 using namespace std;
 
@@ -23,11 +19,6 @@ int readWordFromFile(FILE *fp, char *buffer);
 int readSentenceFromFile(FILE *fp, char *buffer, vector<Palindrome> *palindromes, vector<int> *primeList);
 int addPalindrome(vector<Palindrome> *palindromes, string word, vector<int> *primeList, char mode);
 int sumASCII(const char *str);
-
-
-
-//int addPalindrome(vector<Palindrome> *palindromes, char *word, int wordSize);
-//void readAndProcessBuffer(char *text, int size, vector<Palindrome> *palindromes);
 
 int main(int argc, char **argv){
 	int numtasks, rank, rc, dest, source, tag=1, SIZE_OF_SEGMENT;
@@ -135,7 +126,6 @@ int main(int argc, char **argv){
 			}
 		}
 		fclose(fileout);
-		
 	}
 
 	/*
@@ -145,10 +135,8 @@ int main(int argc, char **argv){
 		
 	for(int i = 0; i < palindromes.size(); i++){
         printf("%s - %d occurrences", palindromes[i].word.c_str(), palindromes[i].count);
-        
         if(palindromes[i].primeNumber != 0)
             printf(" - prime number %d", palindromes[i].primeNumber);
-        
         printf("\n");
     }
 	fclose(file);
