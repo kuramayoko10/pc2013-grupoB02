@@ -72,6 +72,7 @@ int main(int argc, char **argv){
 			}
 			if(!feof(file))
 				fscanf(file, "%c", &aux);
+			/*aqui é feito a verificação se chegou a um final de frase, caso nao tenha chegado e já tenha sido o tamanho total que a partição 				aumenta, aumentamos o tamanho da partição e continuamos lendo ate encontrar um final de frase*/
 			while(!feof(file) && aux != '.' && aux != '!' && aux != '?' && aux != '\n'){
 				if(count == SIZE_OF_SEGMENT+1000*(incrementOfSize-1)){
 		  			outmsg[count2] = (char *) realloc (outmsg[count2], (SIZE_OF_SEGMENT * sizeof(char)+ 1000*incrementOfSize));
@@ -84,13 +85,14 @@ int main(int argc, char **argv){
 			}
 			incrementOfSize = 1;
 		}
-
+		/*depois que dividimos todo o texto, enviamos cada partição para um nó, que ira fazer o processamento da sua particao*/
 		for(dest = 1; dest <= NUMBER_OF_NODES; dest++){
 			rc = MPI_Send(outmsg[dest-1], strlen(outmsg[dest-1]), MPI_CHAR, dest, tag, MPI_COMM_WORLD);
             free(outmsg[dest-1]);
 		}
         fclose(file);
 	}
+	/*aqui são os nós que irao receber os textos e processalos*/
 	else{
 		source = 0;	
 		int tamanho = 0;
@@ -100,6 +102,7 @@ int main(int argc, char **argv){
 			tamanho = 54261766;
 		else
 			tamanho = 5344213;
+		/*aloca-se o buffer com o tamanho do maior texto que pode ser lido, no caso, o texto inteiro. Logo em seguida o nó recebe a particao do 		texto via mensagem*/
 		inmsg[rank-1] = (char*) malloc (tamanho*sizeof(char));
 		rc = MPI_Recv(inmsg[rank-1], tamanho, MPI_CHAR, source, tag, MPI_COMM_WORLD, &Stat);
 
@@ -113,6 +116,7 @@ int main(int argc, char **argv){
 		fclose(fileout);
 		fileout = fopen(vai, "r");
 	
+		/*para cada partição, aplicamos o algoritmo para verificar se é palindrome ou nao*/
 		while(ret){
 			if(!strcmp(argv[1], "wikipedia.txt")){
 				ret = readWordFromFile(fileout, buffer);
@@ -140,7 +144,7 @@ int main(int argc, char **argv){
         resultado.append(vai);
         resultado.append("-out.txt");
         fileout = fopen(resultado.c_str(), "w");
-        
+        /*depois de calcularmos as palindromes de cada partição, escrevemos os resultados encontrados em um arquivo com o nome da particao.out*/
         fprintf(fileout, "wp: %d / sp: %d\n", wpCount, spCount);
         for(int i = 0; i < palindromes.size(); i++){
             fprintf(fileout, "%s - %d occurrences", palindromes[i].word.c_str(), palindromes[i].count);
@@ -156,15 +160,6 @@ int main(int argc, char **argv){
 	 * Finaliza a sessão MPI
 	 */
 	MPI_Finalize();
-		
-	/*for(int i = 0; i < palindromes.size(); i++){
-        printf("%s - %d occurrences", palindromes[i].word.c_str(), palindromes[i].count);
-        if(palindromes[i].primeNumber != 0)
-            printf(" - prime number %d", palindromes[i].primeNumber);
-        printf("\n");
-    }
-	
-    printf("wp: %d / sp: %d\n", wpCount, spCount);*/
     
 	return 0;
 }
@@ -218,16 +213,12 @@ int readSentenceFromFile(FILE *fp, char *buffer, vector<Palindrome> *palindromes
             word[w] = '\0';
             
             if(w >= 3)
-            {
-                //printf("%d - %s\n", i, word);
-                
+            {     
                 if(isPalindrome(word))
                 {
                     wpCount++;
                     addPalindrome(palindromes, word, primeList, 'S');
                 }
-                
-                //printf("%s\n", word);
             }
             
             w = 0;
