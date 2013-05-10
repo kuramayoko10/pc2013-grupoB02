@@ -11,6 +11,7 @@
 using namespace std;
 
 int wpCount = 0, spCount = 0;
+int SIZE_OF_SEGMENT = (int)ceil(5344213/NUMBER_OF_NODES);
 
 bool isPalindrome(const char *input);
 bool isSymbol(char input);
@@ -21,7 +22,7 @@ int addPalindrome(vector<Palindrome> *palindromes, string word, vector<int> *pri
 int sumASCII(const char *str);
 
 int main(int argc, char **argv){
-	int numtasks, rank, rc, dest, source, tag=1, SIZE_OF_SEGMENT;
+	int numtasks, rank, rc, dest, source, tag=1;
 	char *outmsg[NUMBER_OF_NODES]; 
 	char *inmsg[NUMBER_OF_NODES];
 	char fileName[30], aux;
@@ -29,7 +30,7 @@ int main(int argc, char **argv){
 	FILE *file;
 	MPI_Status Stat;
     vector<Palindrome> palindromes;
-	vector<int> primeList;
+    vector<int> primeList;
 	sievePrimeNumbers(&primeList, 20000);
 	/*
 	 * Inicia uma sessão MPI
@@ -41,10 +42,18 @@ int main(int argc, char **argv){
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 	if (rank == 0){
 		file = fopen(argv[1], "r");
+        
+        //printf("argv[1]: %s\n", argv[1]);
+        
 		if(!strcmp(argv[1], "wikipedia.txt"))
 			SIZE_OF_SEGMENT = (int)ceil(54261766/NUMBER_OF_NODES);
 		else
+        {
 			SIZE_OF_SEGMENT = (int)ceil(5344213/NUMBER_OF_NODES);
+        }
+        
+        //printf("%d\n", SIZE_OF_SEGMENT);
+        
 		if(!file){
 	     	printf("Arquivo de entrada nao encontrado!\n");
 	        exit(1);
@@ -78,15 +87,17 @@ int main(int argc, char **argv){
 
 		for(dest = 1; dest <= NUMBER_OF_NODES; dest++){
 			rc = MPI_Send(outmsg[dest-1], strlen(outmsg[dest-1]), MPI_CHAR, dest, tag, MPI_COMM_WORLD);
-		
+            free(outmsg[rank-1]);
 		}
+        fclose(file);
 	}
 	else{
 		source = 0;	
 		printf("rank:%d\n", rank);
+
 		int tamanho = 0;
 		int ret = 2;
-		char buffer[2048];
+		char buffer[32768];
 		if(!strcmp(argv[1], "wikipedia.txt"))
 			tamanho = 54261766;
 		else
@@ -98,6 +109,8 @@ int main(int argc, char **argv){
 		//escreve o texto dividido em arquivos
 		FILE *fileout;
 		char vai[5];
+        string resultado = "";
+        
 		sprintf(vai, "%i", rank);  
 		fileout = fopen(vai, "w");
 		fprintf(fileout, "%s\n", inmsg[rank-1]);	
@@ -126,6 +139,21 @@ int main(int argc, char **argv){
 			}
 		}
 		fclose(fileout);
+        free(inmsg[rank-1]);
+        
+        resultado.append(vai);
+        resultado.append("-out.txt");
+        fileout = fopen(resultado.c_str(), "w");
+        
+        fprintf(fileout, "wp: %d / sp: %d\n", wpCount, spCount);
+        for(int i = 0; i < palindromes.size(); i++){
+            fprintf(fileout, "%s - %d occurrences", palindromes[i].word.c_str(), palindromes[i].count);
+            if(palindromes[i].primeNumber != 0)
+                fprintf(fileout, " - prime number %d", palindromes[i].primeNumber);
+            fprintf(fileout, "\n");
+        }
+        
+        fclose(fileout);
 	}
 
 	/*
@@ -133,17 +161,15 @@ int main(int argc, char **argv){
 	 */
 	MPI_Finalize();
 		
-	for(int i = 0; i < palindromes.size(); i++){
+	/*for(int i = 0; i < palindromes.size(); i++){
         printf("%s - %d occurrences", palindromes[i].word.c_str(), palindromes[i].count);
         if(palindromes[i].primeNumber != 0)
             printf(" - prime number %d", palindromes[i].primeNumber);
         printf("\n");
     }
-	fclose(file);
-	for(count = 0; count < NUMBER_OF_NODES; count++){
-		free(inmsg[count]);
-		free(outmsg[count]);
-	}
+	
+    printf("wp: %d / sp: %d\n", wpCount, spCount);*/
+    
 	return 0;
 }
 
@@ -181,14 +207,14 @@ int readWordFromFile(FILE *fp, char *buffer)
 int readSentenceFromFile(FILE *fp, char *buffer, vector<Palindrome> *palindromes, vector<int> *primeList)
 {
     char read;
-    char word[128];
+    char word[2048];
     int i = 0;
     int w = 0;
     
     buffer[0] = '\0';
     read = fgetc(fp);
     
-    while(!endOfSentence(read) && !feof(fp))
+    while(!feof(fp) && i < SIZE_OF_SEGMENT-1 && !endOfSentence(read))
     {
         if(isSymbol(read) || isspace(read))
         {
