@@ -87,14 +87,12 @@ int main(int argc, char **argv){
 
 		for(dest = 1; dest <= NUMBER_OF_NODES; dest++){
 			rc = MPI_Send(outmsg[dest-1], strlen(outmsg[dest-1]), MPI_CHAR, dest, tag, MPI_COMM_WORLD);
-            free(outmsg[rank-1]);
+            free(outmsg[dest-1]);
 		}
         fclose(file);
 	}
 	else{
 		source = 0;	
-		printf("rank:%d\n", rank);
-
 		int tamanho = 0;
 		int ret = 2;
 		char buffer[32768];
@@ -103,14 +101,12 @@ int main(int argc, char **argv){
 		else
 			tamanho = 5344213;
 		inmsg[rank-1] = (char*) malloc (tamanho*sizeof(char));
-
 		rc = MPI_Recv(inmsg[rank-1], tamanho, MPI_CHAR, source, tag, MPI_COMM_WORLD, &Stat);
 
 		//escreve o texto dividido em arquivos
 		FILE *fileout;
 		char vai[5];
         string resultado = "";
-        
 		sprintf(vai, "%i", rank);  
 		fileout = fopen(vai, "w");
 		fprintf(fileout, "%s\n", inmsg[rank-1]);	
