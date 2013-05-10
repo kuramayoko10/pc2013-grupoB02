@@ -71,7 +71,7 @@ int main(int argc, const char * argv[])
                             if(isPalindrome(word))
                             {
                                 //Adiciona o palindromo ao vector de palindromos
-                                addPalindrome(&palindromes, word, &primeList, 'S');
+                                addPalindrome(&palindromes, word, &primeList, mode);
                                 wpCount++;
                             }
                         }
@@ -88,7 +88,7 @@ int main(int argc, const char * argv[])
                         {
                             if(isPalindrome(sentence))
                             {
-                                addPalindrome(&palindromes, sentence, &primeList, 'L');
+                                addPalindrome(&palindromes, sentence, &primeList, mode);
                                 spCount++;
                             }
                         }
