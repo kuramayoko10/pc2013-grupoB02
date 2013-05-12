@@ -1,3 +1,10 @@
+// common.h - Trabalho 2
+// Deteccao de palindromos em textos
+// Metodos e estruturas comuns a todas implementacoes
+//
+// Grupo: 02
+// Cassiano K. Casagrande, Guilherme S. Gibertoni, Rodrigo V. C. Beber
+
 #ifndef COMMON_H
 #define COMMON_H
 
@@ -50,11 +57,14 @@ bool isPrimeNumber(std::vector<int> *primeList, unsigned int number);
 #endif
 
 #ifdef _OPENMP
+
 #include <omp.h>
 #else
 #define omp_get_num_procs(X) 1
 #endif
 
+/* Retorna TRUE se a string composta por alfa numericos apontada por s de 
+tamanho n é palindroma. */
 inline static bool word_is_palin(char *s, unsigned n)
 {
 	register int i, j;
@@ -69,6 +79,8 @@ inline static bool word_is_palin(char *s, unsigned n)
 
 }
 
+/* Retorna um inteiro igual a soma dos valores ASCII de uma string de tamanho n
+*/
 inline static unsigned word_sum(char *s, unsigned n)
 {
 	register unsigned i, sum;
@@ -76,6 +88,8 @@ inline static unsigned word_sum(char *s, unsigned n)
 	return sum;
 }
 
+/* Retorna TRUE se a string composta por alfa numericos e espacos apontada por 
+s de tamanho n é palindromo. */
 inline static bool phrase_is_palin(char *s, unsigned n, char mode)
 {
 	register int i, j;
@@ -93,6 +107,7 @@ inline static bool phrase_is_palin(char *s, unsigned n, char mode)
 	return TRUE;
 }
 
+/* Retorna TRUE se um numero n é primo, caso contrario retorna FALSE*/
 inline static bool is_prime(unsigned n, char mode)
 { 
 	register unsigned i, sqrtn = (unsigned) sqrt(n);

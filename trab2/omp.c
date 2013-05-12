@@ -20,9 +20,11 @@ int main(int argc, char **argv) {
 	unsigned word_palin_count=0, phrase_palin_count=0, prime_count=0;
 	clock_t begin, end;
 	char mode;
+	/* div_num é o numero de iteracoes do loop a ser executado*/
 	div_num = omp_get_num_procs();
 	if (argc != 2)
 		return 0;
+	/* No caso do processamento ser do arquivo grande. */
 	if (strcmp(argv[1], "big_text") == 0)
 	{
 		mode = BIG_MODE;
@@ -34,6 +36,7 @@ int main(int argc, char **argv) {
 		for (i=0; i<BIG_TEXT_SIZE; i++)
 			text[i] = tolower(getc(file));
 	}
+	/* No caso do pequeno. */
 	else if (strcmp(argv[1], "small_text") == 0)
 	{
 		mode = SMALL_MODE;
@@ -45,11 +48,18 @@ int main(int argc, char **argv) {
 		for (i=0; i<SMALL_TEXT_SIZE; i++)
 			text[i] = tolower(getc(file));
 	}
+	/* caso nao seja passado ennhum arquivo, sai da execução. */
 	else return 0;
 	fclose (file);
+    
 	/* For each block*/ 
 	begin = clock();
 #pragma omp parallel for private(i, j, word_size, phrase_size, word, phrase, cur_state)
+	/* O texto inteiro é dividido em div_num pedaçoes de block_size cada.
+Cada thread processara até o fim da ultima frase do bloco. O processamento se 
+da por meio de uma automato finito com 3 estados, cada estado representa o 
+ultimo caracter lido do bloco, dependendo do caracter que será lido ocorrerá 
+uma transicao. Cada transiçao tem associada a si diversas açoes.*/
 	for (i=0; i<div_num; i++)
 	{
 		cur_state = STATE_PUNCT;

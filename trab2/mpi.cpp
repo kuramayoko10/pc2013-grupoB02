@@ -10,17 +10,68 @@
 
 using namespace std;
 
+//Contador de palindromos - palavra (wp) e frases (sp)
 int wpCount = 0, spCount = 0;
-int SIZE_OF_SEGMENT = (int)ceil(5344213/NUMBER_OF_NODES);
+//Tamanho do bloco de texto a ser repassado a cada no
+int SIZE_OF_SEGMENT = (int)ceil(SMALL_TEXT_SIZE/NUMBER_OF_NODES);
 
+/* Verifica se uma dada string e' palindromo
+ * input: cadeia de caracteres a ser verificada
+ *
+ * return: true se a string for palindromo; false caso contrario.
+ */
 bool isPalindrome(const char *input);
+
+/* Verifica se uma dado caractere e' um simbolo (nao e' letra)
+ *
+ * return: true se o caractere for simbolo; false caso seja uma letra.
+ */
 bool isSymbol(char input);
+
+/* Verifica se um dado caractere representa o fim de uma sentenca
+ * input: caractere a ser verificado
+ *
+ * return: true se o caractere for {.!?\n\r}; false caso contrario.
+ */
 bool endOfSentence(char input);
+
+/* Retorna a proxima palavra dentro do arquivo apontado por fp
+ * fp: ponteiro para um arquivo aberto no sistema
+ * buffer: cadeia de caracteres que recebera o retorno da funcao
+ *
+ * return: 0 se nao ha mais nada a ser lido no arquivo, 1 se a palavra tiver mais de 3 letras, 2 caso a palavra tiver entre 0 e 2 letras.
+ */
 int readWordFromFile(FILE *fp, char *buffer);
+
+/* Retorna a proxima sentenca dentro do arquivo apontado por fp. Ao processar a sentenca ja verifica se as palavras nela contidas sao palindromos
+ * fp: ponteiro para um arquivo aberto no sistema
+ * buffer: cadeia de caracteres que recebera o retorno da funcao
+ * palindromes: ponteiro para o vector onde esta sendo armazenados os p lindromos ja classificados
+ * primeList: ponteiro para o vector que contem todos os numeros primos de 2 a 20000
+ *
+ * return: 0 se nao ha mais nada a ser lido no arquivo, 1 se a sentenca tiver mais de 3 letras, 2 caso a sentenca tiver entre 0 e 2 letras.
+ */
+
 int readSentenceFromFile(FILE *fp, char *buffer, vector<Palindrome> *palindromes, vector<int> *primeList);
+
+/* Adiciona a palavra word no vector de palindromos. Se a palavra ja tiver sido armazenada anteriormente, apenas incrementa um contador
+ * palindromes: ponteiro para o vector onde esta sendo armazenados os p lindromos ja classificados
+ * word: string que contem a palavra ou sentenca palindromo
+ * primeList: ponteiro para o vector que contem todos os numeros primos de 2 a 20000
+ * mode: caractere 'L' ou 'S', onde L habilitara a verificacao de numero primo em word
+ *
+ * return: a posicao no vector de palindromos no qual word esta armazenada.
+ */
 int addPalindrome(vector<Palindrome> *palindromes, string word, vector<int> *primeList, char mode);
+
+/* Retorna a soma numerica dos caracteres ASCII que compoe a cadeia str
+ * str: cadeia de caracteres a ser somada
+ *
+ * return: inteiro referente a soma numerica dos caracteres ASCII.
+ */
 int sumASCII(const char *str);
 
+//Funcao principal
 int main(int argc, char **argv){
 	int numtasks, rank, rc, dest, source, tag=1;
 	char *outmsg[NUMBER_OF_NODES]; 
@@ -31,19 +82,20 @@ int main(int argc, char **argv){
 	MPI_Status Stat;
     vector<Palindrome> palindromes;
     vector<int> primeList;
-	sievePrimeNumbers(&primeList, 20000);
+	
+    sievePrimeNumbers(&primeList, 20000);
+    
 	/*
 	 * Inicia uma sessão MPI
 	 */
 	MPI_Init(&argc, &argv);
+    
 	/*
 	 * Obtêm o id do processo
 	 */
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 	if (rank == 0){
 		file = fopen(argv[1], "r");
-        
-        //printf("argv[1]: %s\n", argv[1]);
         
 		if(!strcmp(argv[1], "wikipedia.txt"))
 			SIZE_OF_SEGMENT = (int)ceil(54261766/NUMBER_OF_NODES);
@@ -52,12 +104,11 @@ int main(int argc, char **argv){
 			SIZE_OF_SEGMENT = (int)ceil(5344213/NUMBER_OF_NODES);
         }
         
-        //printf("%d\n", SIZE_OF_SEGMENT);
-        
 		if(!file){
 	     	printf("Arquivo de entrada nao encontrado!\n");
 	        exit(1);
 	    }
+        
 		/*inicializa os vetores de caracteres para enviar a msg*/
 		for(count=0; count < NUMBER_OF_NODES; count++)
 			outmsg[count] = (char*) malloc (SIZE_OF_SEGMENT*sizeof(char ));
@@ -106,7 +157,7 @@ int main(int argc, char **argv){
 		inmsg[rank-1] = (char*) malloc (tamanho*sizeof(char));
 		rc = MPI_Recv(inmsg[rank-1], tamanho, MPI_CHAR, source, tag, MPI_COMM_WORLD, &Stat);
 
-		//escreve o texto dividido em arquivos
+		//Escreve o texto que recebeu em um arquivo
 		FILE *fileout;
 		char vai[5];
         string resultado = "";
@@ -116,7 +167,9 @@ int main(int argc, char **argv){
 		fclose(fileout);
 		fileout = fopen(vai, "r");
 	
-		/*para cada partição, aplicamos o algoritmo para verificar se é palindrome ou nao*/
+
+        //Leia do arquivo recem criado cada palindromo e frase
+        //Utiliza o metodo ja implementado no algoritmo sequencial
 		while(ret){
 			if(!strcmp(argv[1], "wikipedia.txt")){
 				ret = readWordFromFile(fileout, buffer);
@@ -173,6 +226,8 @@ int readWordFromFile(FILE *fp, char *buffer)
     buffer[0] = '\0';
     read = fgetc(fp);
     
+    //Enquanto estiver lendo letras, compoe a palavra
+    //Se encontrar simbolo, numero ou espaco em branco retorna a palavra formada
     while(!isSymbol(read) && !isspace(read))
     {
         buffer[i++] = read;
@@ -183,7 +238,7 @@ int readWordFromFile(FILE *fp, char *buffer)
     
     //Consideramos palindromos apenas as palavras de mais de 3 caracteres.
     //Pois estas tem um significado claro na lingua
-    //Artigos 'a' ou palavras comprimidas "we'll" nao nos interessa
+    //Artigos 'a' ou palavras comprimidas will -> "ll" nao nos interessa
     if(strlen(buffer) > 2)
     {
         return 1;
@@ -198,20 +253,25 @@ int readWordFromFile(FILE *fp, char *buffer)
 int readSentenceFromFile(FILE *fp, char *buffer, vector<Palindrome> *palindromes, vector<int> *primeList)
 {
     char read;
-    char word[2048];
+    char word[128];
     int i = 0;
     int w = 0;
     
     buffer[0] = '\0';
     read = fgetc(fp);
     
-    while(!feof(fp) && i < SIZE_OF_SEGMENT-1 && !endOfSentence(read))
+    //Enquanto estiver lendo letras, compoe a sentenca
+    //Se encontrar simbolo ".!?\n\r" ou fim de arquivo, retorna a sentenca formada
+    while(!endOfSentence(read) && !feof(fp))
     {
+        //Enquanto estiver lendo letras, compoe a palavra
+        //Se encontrar simbolo, numero ou espaco em branco retorna a palavra formada
         if(isSymbol(read) || isspace(read))
         {
-            //Processa a palavra anterior e descarta a pontuacao/espaco_branco
+            //Descarta a pontuacao/espaco_branco
             word[w] = '\0';
             
+            //Consideramos palindromos apenas as palavras de mais de 3 caracteres.
             if(w >= 3)
             {     
                 if(isPalindrome(word))
@@ -233,9 +293,7 @@ int readSentenceFromFile(FILE *fp, char *buffer, vector<Palindrome> *palindromes
     }
     buffer[i] = '\0';
     
-    //Consideramos palindromos apenas as palavras de mais de 3 caracteres.
-    //Pois estas tem um significado claro na lingua
-    //Artigos 'a' ou palavras comprimidas "we'll" nao nos interessa
+    //Consideramos palindromos apenas as sentencas de mais de 3 caracteres.
     if(strlen(buffer) >= 3)
         return 1;
     
@@ -248,7 +306,6 @@ int readSentenceFromFile(FILE *fp, char *buffer, vector<Palindrome> *palindromes
 bool isSymbol(char input)
 {
     //Caracteres aceitos sao: letras minisculas/maisculas
-    //(input >= 48 && input <= 57) || 
     if((input >= 65 && input <= 90) || (input >= 97 && input <= 122))
     {
         return false;
@@ -259,7 +316,7 @@ bool isSymbol(char input)
 
 bool endOfSentence(char input)
 {
-    if(input == '.' || input == '!' || input == '?' || input == '\n')
+    if(input == '.' || input == '!' || input == '?' || input == '\n' || input == '\r')
         return true;
     
     return false;
@@ -270,15 +327,15 @@ bool isPalindrome(const char *input)
     int size = (unsigned)strlen(input) - 1;
     int i = 0;
     
+    //Percorre a palavra da esquerda->direita e direita->esquerda comparando as letras
+    //Se alguma comparacao nao bater, a palavra nao eh palindromo
+    //So precisa percorrer ate a metade do vetor
     while(i <= ceil(size/2.0))
     {
         if(size < 0)
             return false;
         
-        //Percorre a palavra da esquerda->direita e direita->esquerda comparando as letras
-        //Se alguma comparacao nao bater, a palavra nao eh palindromo
-        
-        //ignora caps
+        //ignora diferenca de caixa-alta e caixa-baixa
         char a = toupper(input[i]);
         char b = toupper(input[size-i]);
         
@@ -291,25 +348,26 @@ bool isPalindrome(const char *input)
     return true;
 }
 
-//Adiciona a palavra oa vetor e retorna sua posicao
 int addPalindrome(vector<Palindrome> *palindromes, string word, vector<int> *primeList, char mode)
 {
     int i = 0, ret = -1;
     unsigned long size = palindromes->size();
+    clock_t startTimer, stopTimer;
     
     //Verifica se a palavra ja foi adicionada
+    startTimer = clock();
     while(i < size && ret < 0)
     {
         ret = word.compare(palindromes->at(i).word);
         i++;
     }
     
-    //Adiciona o contador
+    //Adiciona ao contador se a palavra ja estiver inserido
     if(ret == 0)
     {
         palindromes->at(i-1).count++;
     }
-    else
+    else //Caso contrario insere a palavra no vetor na posicao que mantem a ordem alfabetica do mesmo
     {
         Palindrome pal;
         
@@ -322,16 +380,24 @@ int addPalindrome(vector<Palindrome> *palindromes, string word, vector<int> *pri
         
         palindromes->insert(palindromes->begin()+i-1, pal);
         
+        //Se o modo de leitura eh Large, verifica que a palavra remete a um numero primo
         if(mode == 'L')
         {
             int num = sumASCII(word.c_str());
             
+            clock_t primeStart = clock();
             if(isPrimeNumber(primeList, num))
             {
                 palindromes->at(i-1).primeNumber = num;
+                
+                clock_t primeStop = clock();
+                printf("Tempo Verificacao de Primo: %lf\n", (double)(primeStop - primeStart)/CLOCKS_PER_SEC);
             }
         }
     }
+    
+    stopTimer = clock();
+    printf("Tempo Registro de Palindromo no Vector: %lf\n", (double)(stopTimer-startTimer)/CLOCKS_PER_SEC);
     
     return i-1;
 }
@@ -345,8 +411,6 @@ int sumASCII(const char *str)
     
     return sum;
 }
-
-
 
 
 

@@ -9,7 +9,12 @@
 #include "common.h"
 
 
-
+/* Gera a lista de numeros primos limitada por limits e armazena no vector primeList. A geracao eh baseada no Crivo de Eratostenes
+ * input: cadeia de caracteres a ser verificada
+ * callCount: inteiro para armazenar a contagem de chamadas a este metodo
+ *
+ * return: true se a string for palindromo; false caso contrario.
+ */
 void sievePrimeNumbers(std::vector<int> *primeList, unsigned int limit)
 {
     unsigned int lastCheck = sqrt(limit);
@@ -91,27 +96,6 @@ void loadList(std::vector<int> *primeList, const char* filename)
     
     fclose(file);
 }
-
-//Testes
-/*int main(int argc, char *argv[])
- {
- unsigned int test = 113;
- 
- //Gera uma nova lista de numeros primos ate o limite abaixo
- sievePrimeNumbers(5000);
- //Salva a lista em arquivo
- //saveList("prime-numbers.txt");
- 
- //Carrega a lista salva
- //loadList("prime-numbers.txt");
- //Testa se um dado numero e' primo
- if(isPrimeNumber(test))
- printf("O numero %d e' primo\n", test);
- else
- printf("O numero %d NAO e' primo\n", test);
- 
- return 0;
- }*/
 
 
 
