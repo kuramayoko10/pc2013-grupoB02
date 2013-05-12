@@ -1,15 +1,16 @@
 CFLAGS=-march=native -mtune=native -Wall -Wextra -pedantic
+CPPFLAGS=-Wall -Wextra -Os
 
 all: seq omp mpi 
 
-seq: seq.c common.h
-	gcc $(CFLAGS) -std=c99 $< -o seq -lm
+seq: seq.cpp primeNumber.cpp common.h
+	g++ $(CPPFLAGS) $< -o seq -lm
 
 omp: omp.c common.h
-	gcc $(CFLAGS) -std=c99 -g -fopenmp $< -o omp -lm
+	gcc $(CPPFLAGS) -std=c99 -g -fopenmp $< -o omp -lm
 
-mpi: mpi.cpp common.h
-	mpig++ $(CFLAGS) $< -o mpi -lm
+mpi: mpi.cpp primeNumber.cpp common.h
+	mpicxx $(CPPFLAGS) $< -o mpi -lm
 
 #Removes all tildes ending files, objects codes and test executable
 clean:
