@@ -42,7 +42,8 @@ typedef unsigned char bool;
 #include <vector>
 #include <string>
 
-
+//Estrutura para armazenar o palindromo, seja frase ou palavra, e quantas vezes ele apareceu no texto
+//Armazena tambem o seu numero primo respectivo quando necessario
 typedef struct
 {
     std::string word;
@@ -50,11 +51,13 @@ typedef struct
     unsigned int primeNumber;
 }Palindrome;
 
+//Documentacao no primeNumber.cpp
 void sievePrimeNumbers(std::vector<int> *primeList, unsigned int limit);
 void loadList(std::vector<int> *primeList, const char* filename);
 void saveList(std::vector<int> *primeList, const char* filename);
 bool isPrimeNumber(std::vector<int> *primeList, unsigned int number);
 #endif
+
 
 #ifdef _OPENMP
 
@@ -63,8 +66,18 @@ bool isPrimeNumber(std::vector<int> *primeList, unsigned int number);
 #define omp_get_num_procs(X) 1
 #endif
 
-/* Retorna TRUE se a string composta por alfa numericos apontada por s de 
-tamanho n é palindroma. */
+/* Imprime os n primeiros caracteres da string apontada por s*/
+inline static void print_str(char *s, unsigned n)
+{
+	register unsigned i;
+	for (i=0; i<n; ++i)
+		if (isalnum(s[i]))
+			putchar(s[i]);
+	putchar('\n');
+}
+
+/* Retorna TRUE se a string composta por alfa numericos apontada por s de
+ tamanho n é palindroma. */
 inline static bool word_is_palin(char *s, unsigned n)
 {
 	register int i, j;
@@ -75,12 +88,13 @@ inline static bool word_is_palin(char *s, unsigned n)
 		if (s[i] != s[j])
 			return FALSE;
 	}
+	print_str(s, n);
 	return TRUE;
-
+    
 }
 
 /* Retorna um inteiro igual a soma dos valores ASCII de uma string de tamanho n
-*/
+ */
 inline static unsigned word_sum(char *s, unsigned n)
 {
 	register unsigned i, sum;
@@ -88,8 +102,8 @@ inline static unsigned word_sum(char *s, unsigned n)
 	return sum;
 }
 
-/* Retorna TRUE se a string composta por alfa numericos e espacos apontada por 
-s de tamanho n é palindromo. */
+/* Retorna TRUE se a string composta por alfa numericos e espacos apontada por
+ s de tamanho n é palindromo. */
 inline static bool phrase_is_palin(char *s, unsigned n, char mode)
 {
 	register int i, j;
@@ -104,19 +118,22 @@ inline static bool phrase_is_palin(char *s, unsigned n, char mode)
 		if (s[i] != s[j])
 			return FALSE;
 	}
+	print_str(s, n);
 	return TRUE;
 }
 
 /* Retorna TRUE se um numero n é primo, caso contrario retorna FALSE*/
 inline static bool is_prime(unsigned n, char mode)
-{ 
+{
 	register unsigned i, sqrtn = (unsigned) sqrt(n);
 	if (n%2 == 0||mode==SMALL_MODE)
 		return FALSE;
 	for (i=3; i<sqrtn; i+=2)
 		if (n%i == 0)
 			return FALSE;
-	return TRUE; 
+	return TRUE;
 }
+
+
 
 #endif

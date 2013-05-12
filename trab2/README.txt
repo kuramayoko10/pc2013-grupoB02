@@ -33,15 +33,11 @@
 	OpenMP: 	./omp arquivo_entrada
 	MPI:		./mpi arquivo_entrada
 
-* O arquivo 'pi' apresenta as 10 milhões de casas corretas do PI de acordo com o armazenado em http://archive.org na internet.
-
+* Os algoritmos Sequencial e OpenMP irao apresentar a saida na tela. 
+* Ja o MPI vai apresentar saida em arquivos de 1 a 13 com nome i-saida.txt
+  * Cada arquivo corresponde ao processamento de um dado no do cluster
 
 4) Notas Finais:
 -----------------
-* Na versão atual dos algoritmos apenas a ultima iteração está sendo impressa, 
-  pois facilita na hora de executar o programa 'compare' e verificar a corretude
-  da saída.
-
-* Para obter a saída das outras iterações, basta descomentar no código-fonte a linha
-  //mpf_out_str(…)
+* 
 
