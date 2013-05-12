@@ -10,10 +10,10 @@
 
 
 /* Gera a lista de numeros primos limitada por limits e armazena no vector primeList. A geracao eh baseada no Crivo de Eratostenes
- * input: cadeia de caracteres a ser verificada
- * callCount: inteiro para armazenar a contagem de chamadas a este metodo
+ * primeList: vector para armazenar os numeros primos
+ * limit: inteiro para limitar o maior numero primo da lista
  *
- * return: true se a string for palindromo; false caso contrario.
+ * return: void
  */
 void sievePrimeNumbers(std::vector<int> *primeList, unsigned int limit)
 {
@@ -40,6 +40,12 @@ void sievePrimeNumbers(std::vector<int> *primeList, unsigned int limit)
     }
 }
 
+/* Verifica se um dado numero e' primo
+ * primeList: vector que tem armazenado os numeros primos
+ * number: inteiro positivo que deseja-se verificar
+ *
+ * return: true se for primo. false caso contrario
+ */
 bool isPrimeNumber(std::vector<int> *primeList, unsigned int number)
 {
     unsigned int curPos, left, right, curValue;
@@ -68,6 +74,12 @@ bool isPrimeNumber(std::vector<int> *primeList, unsigned int number)
     return false;
 }
 
+/* Salva a lista de numeros primos em um arquivo
+ * primeList: vector que armazena os numeros primos
+ * filename: nome do arquivo a ser gerado
+ *
+ * return: void
+ */
 void saveList(std::vector<int> *primeList, const char* filename)
 {
     FILE *file = fopen(filename, "w+");
@@ -81,6 +93,12 @@ void saveList(std::vector<int> *primeList, const char* filename)
     fclose(file);
 }
 
+/* Carrega a lista de numeros primos de um arquivo para um vector
+ * primeList: vector para armazenar os numeros primos
+ * filename: nome do arquivo que contem os numeros primos. Os numero deverao constar sozinhos em cada linha.
+ *
+ * return: void
+ */
 void loadList(std::vector<int> *primeList, const char* filename)
 {
     FILE *file = fopen(filename, "r");
