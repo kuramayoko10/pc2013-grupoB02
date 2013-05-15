@@ -2,28 +2,12 @@
 #include <stdlib.h>
 #include "qrand.h"
 
-unsigned long qrand_x = 123456789;
-unsigned long qrand_y = 678912345;
-unsigned long qrand_z = 987651234;
 
 void qrand_seed(unsigned seed)
 {
 	qrand_x ^= seed;
 	qrand_y ^= seed<<3;
 	qrand_z ^= seed<<7;	
-}
-
-unsigned long qrand(void)
-{
-	unsigned long t;
-	qrand_x ^= qrand_x<<16;
-	qrand_x ^= qrand_x>>5;
-	qrand_x ^= qrand_x<<1;
-	t = qrand_x;
-	qrand_x = qrand_y;
-	qrand_y = qrand_z;
-	qrand_z = t^qrand_x^qrand_y;
-	return qrand_z;
 }
 
 void qrand_test(unsigned n, unsigned long long iterations)
@@ -38,4 +22,16 @@ void qrand_test(unsigned n, unsigned long long iterations)
 		printf("At position %llu: %u.\n", i, array[i]);
 	}
 	free(array);
+}
+
+void qrand_word(char *s, unsigned lenght)
+{
+	unsigned i;
+	s[--lenght]='\0';
+	for (i=0; i<lenght; ++i)
+	{
+		s[i]='a'+(qrand())%26;	
+	}
+	printf("%s\n",s);
+	return;
 }

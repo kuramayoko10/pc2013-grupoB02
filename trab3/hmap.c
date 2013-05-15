@@ -149,6 +149,25 @@ int hmap_search(struct hmap *map, void *key, void *data)
 	return FAILURE;
 }
 
+int hmap_update(struct hmap *map, void *key, void *data)
+{
+	unsigned long i=0, index=map->hash(key)%map->map_size;
+	unsigned char *aux_key=map->keys, *aux_data=map->data;
+	while (!is_empty(aux_key+((index+i)%map->map_size)*(map->key_size),
+				map->key_size)&&i!=map->map_size)
+	{
+		if (memcmp(aux_key+((index+i)%map->map_size)*(map->key_size), 
+				key, map->key_size) == 0)
+		{
+			memcpy(aux_data+((index+i)%map->map_size)*
+					(map->data_size), data, map->data_size);
+			return SUCCESS;
+		}
+		i++;
+	}
+	return FAILURE;
+}
+
 void hmap_print(struct hmap *map)
 {
   unsigned long i, j;

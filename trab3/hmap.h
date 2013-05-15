@@ -82,6 +82,9 @@ int hmap_search(struct hmap *map, void *key, void *data);
 *	Prints all data in the hmap structure for debugging.
 * 	@param map Pointer to the hmap structure that will be printed.
 */
+
+int hmap_update(struct hmap *map, void *key, void *data);
+
 void hmap_print(struct hmap *map);
 
 
