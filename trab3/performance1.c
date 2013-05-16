@@ -3,7 +3,7 @@
 #include <time.h>
 #include "qrand.h"
 
-#define ITERATIONS 100000
+#define ITERATIONS 10000000
 
 
 int main(void)
@@ -15,7 +15,8 @@ int main(void)
 	qrand_seed(time(NULL));
 	for (i=0; i<ITERATIONS; i++)
 	{
-		qrand_word(string, 6);
+		qrand_word(string);
+		printf("%s\n", string);
 	}
 	end = clock();
 	printf("Took %fs.\n", (float)(end-begin)/CLOCKS_PER_SEC);

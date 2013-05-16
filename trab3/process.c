@@ -4,8 +4,9 @@
 #include "process.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <ctype.h>
-
+#include <time.h>
 
 unsigned long string_hash(const void *a)
 /* 	Calculates the hash of a null terminated string by using some magic
@@ -20,53 +21,44 @@ unsigned long string_hash(const void *a)
 	return (hash)%MAP_SIZE;
 }
 
-int read_until_comma(FILE *file, char *string, unsigned string_size)
-{
-	unsigned i;
-	char c;
-	for (i=0; i<string_size-1; ++i)
-	{
-		c = tolower(getc(file));
-		if (c == ' ')
-		{
-			--i;
-			continue;
-		}
-		if (c == ',')
-		{ string[i] = '\0';
-			return SUCCESS;		
-		}
-		if (c == EOF)
-		{
-			string[i] = '\0';
-			return FAILURE;
-		}
-		string[i] = c;
-	}
-	string[i] = '\0';
-	return SUCCESS;
-}
-
 int main(void)
 {
-	char input_string[30];
+	char input_string[40];
 	bool flag_found;
 	FILE *input_file;
 	struct hmap *word_map;
+	unsigned long i=0, sum=0, rep=0;
+	qrand_seed(time(NULL));
 	flag_found = FALSE;
 	input_file = fopen("palavras.txt", "r");
-	word_map = hmap_init(MAP_SIZE, 30*sizeof(char), sizeof(bool),
-			 string_hash);
+	word_map = hmap_init(MAP_SIZE, 40*sizeof(char), sizeof(bool),
+			string_hash);
 	if (word_map == NULL)
 		return FAILURE;
-	while (read_until_comma(input_file, input_string, 30) == SUCCESS)
+	memset(input_string, '\0', 40);
+	while (fscanf(input_file, "%40s", input_string) != EOF)
 	{
 		if (hmap_search(word_map, input_string, &flag_found) == 
 				FAILURE)
+		{
 			hmap_insert(word_map, input_string, &flag_found);
+			if (strlen(input_string)<=5)
+			rep++;
+		}
+		memset(input_string, '\0', 40);
 	}
-	hmap_print(word_map);
-	hmap_free(word_map);
 	fclose(input_file);
+	for (i=0;i<rep;)
+	{
+		qrand_word(input_string);
+		flag_found=TRUE;
+		if (hmap_remove(word_map, input_string, &flag_found) ==
+				SUCCESS)
+		{
+			printf("Found %lu of %lu: %s\n", i, rep, input_string);
+			i++;	
+		}
+	}
+	hmap_free(word_map);
 	return SUCCESS;
 }

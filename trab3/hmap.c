@@ -40,18 +40,8 @@ bool is_reserved(void *data, unsigned long size)
 	return TRUE;
 }
 
-unsigned long std_hash(const void *a)
-{
-	unsigned long hash = 5831;
-	int c, *n;
-	n = (int *) a;
-	while ((c = *n++))
-		hash = ((hash<<5) + hash) + c;
-	return hash;
-}
-
-struct hmap *hmap_init(unsigned long map_size, unsigned long data_size,
-		unsigned long key_size, unsigned long (*hash)(const void *))
+struct hmap *hmap_init(unsigned long map_size, unsigned long key_size,
+		unsigned long data_size, unsigned long (*hash)(const void *))
 {
 	struct hmap *map;
 	map = malloc(sizeof(struct hmap));
@@ -70,14 +60,11 @@ struct hmap *hmap_init(unsigned long map_size, unsigned long data_size,
 		free(map);
 		return NULL;
 	}
-  memset(map->keys, HMAP_EMPTY_BLOCK, map_size*key_size);
+	memset(map->keys, HMAP_EMPTY_BLOCK, map_size*key_size);
 	map->map_size = map_size;
 	map->key_size = key_size;
 	map->data_size = data_size;
-	if (hash == NULL)
-		map->hash = std_hash;
-	else
-		map->hash = hash;
+	map->hash = hash;
 	return map;
 }
 
@@ -132,7 +119,7 @@ int hmap_remove(struct hmap *map, void *key, void *data)
 
 int hmap_search(struct hmap *map, void *key, void *data)
 {
-	unsigned long i=0, index=map->hash(key)%map->map_size;
+	unsigned long i=0, index=map->hash(key);
 	unsigned char *aux_key=map->keys, *aux_data=map->data;
 	while (!is_empty(aux_key+((index+i)%map->map_size)*(map->key_size),
 				map->key_size)&&i!=map->map_size)
@@ -171,14 +158,13 @@ int hmap_update(struct hmap *map, void *key, void *data)
 void hmap_print(struct hmap *map)
 {
   unsigned long i, j;
-	unsigned char *aux_key=map->keys, *aux_data=map->data;
+	char *aux_key=map->keys, *aux_data=map->data;
   printf("Struct hmap at %p\n", (void *) map);
   printf("map_size=%lu    key_size=%lu    data_size=%lu\n", map->map_size,
         map->key_size, map->data_size);
 	for (i=0; i<map->map_size; i++)
 	{
-  	if (is_empty(aux_key+i*map->key_size,
-				map->key_size))
+		if (is_empty(aux_key+i*map->key_size,map->key_size))
 			printf("Block %lu: empty\n", i);
 		else if (is_deleted(aux_key+i*map->key_size,
 				map->key_size))

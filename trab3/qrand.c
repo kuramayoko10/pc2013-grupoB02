@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "qrand.h"
 
 
@@ -24,14 +25,26 @@ void qrand_test(unsigned n, unsigned long long iterations)
 	free(array);
 }
 
-void qrand_word(char *s, unsigned lenght)
+
+void qrand_word(char *s)
 {
-	unsigned i;
-	s[--lenght]='\0';
+	unsigned i, lenght;
+	lenght = rand()%TOTAL_FIVE;
+	if (lenght > TOTAL_FOUR)
+		lenght = 5;	
+	else if (lenght > TOTAL_THREE)
+		lenght = 4;
+	else if (lenght > TOTAL_TWO)
+		lenght = 3;
+	else if (lenght > TOTAL_ONE)
+		lenght = 2;
+	else 
+		lenght = 1;
+
+	memset(s+lenght, '\0', 30-lenght);
 	for (i=0; i<lenght; ++i)
 	{
 		s[i]='a'+(qrand())%26;	
 	}
-	printf("%s\n",s);
 	return;
 }

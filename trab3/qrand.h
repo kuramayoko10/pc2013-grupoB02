@@ -1,6 +1,17 @@
 #ifndef QRAND_H
 #define QRAND_H
 
+#define ONLY_ONE 26
+#define ONLY_TWO 676
+#define ONLY_THREE 17576
+#define ONLY_FOUR 456976 
+#define ONLY_FIVE 11881376 
+#define TOTAL_ONE 26
+#define TOTAL_TWO 702
+#define TOTAL_THREE 18278
+#define TOTAL_FOUR 475254
+#define TOTAL_FIVE 12356624
+
 
 static unsigned qrand_x = 123456789;
 static unsigned qrand_y = 678912345;
@@ -27,8 +38,7 @@ static inline unsigned qrand(void)
 	qrand_x = qrand_y;
 	qrand_y = qrand_z;
 	qrand_z = t^qrand_x^qrand_y;
-	return qrand_z;
-}
+	return qrand_z; }
 
 /*  	Unit test to determine if qrand generates a uniform distribution
  * in [0, n] using iterations iterations.
@@ -36,6 +46,12 @@ static inline unsigned qrand(void)
  * 	@param iterations Number of iterations in the test. 
  */
 void qrand_test(unsigned n, unsigned long long iterations);
-void qrand_word(char *, unsigned);
+
+/*
+ *	Sorts a string with 1 to 5 letters.
+ * 	@param s Pointer to the char array in which the null-terminated 
+ * string will be written to.
+ */
+void qrand_word(char *s);
 
 #endif

@@ -3,7 +3,7 @@
 
 #include "common.h"
 
-#define HMAP_EMPTY_BLOCK 0xff
+#define HMAP_EMPTY_BLOCK 0xfd
 #define HMAP_DELETED_BLOCK 0xfe
 
 
@@ -82,10 +82,9 @@ int hmap_search(struct hmap *map, void *key, void *data);
 *	Prints all data in the hmap structure for debugging.
 * 	@param map Pointer to the hmap structure that will be printed.
 */
+void hmap_print(struct hmap *map);
 
 int hmap_update(struct hmap *map, void *key, void *data);
-
-void hmap_print(struct hmap *map);
 
 
 #endif

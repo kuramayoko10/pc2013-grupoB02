@@ -1,5 +1,5 @@
 CC=gcc
-CCFLAGS=-std=c99 -march=native -mtune=native -Wall -Wextra -pedantic -Os -pg
+CCFLAGS=-std=c99 -Wall -Wextra -pedantic -pg
 CLFLAGS=
 
 
