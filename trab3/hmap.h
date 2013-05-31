@@ -27,7 +27,6 @@ struct hmap
 };
 
 
-
 /*
 * 	Inits the a hash map structure and returns a pointer to it.
 * 	@param map_size Size of the hash map.

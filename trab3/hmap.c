@@ -1,8 +1,10 @@
-#include "hmap.h"
-#include "common.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "hmap.h"
+#include "common.h"
+
 
 bool is_empty(void *data, unsigned long size)
 {
