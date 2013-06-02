@@ -6,7 +6,6 @@
 #define HMAP_EMPTY_BLOCK 0xfd
 #define HMAP_DELETED_BLOCK 0xfe
 
-
 /*
 *	@section Description A generic hash map data structure implementation,
 * using a probing collision solving. The hash map stores data with data_size 
@@ -84,6 +83,5 @@ int hmap_search(struct hmap *map, void *key, void *data);
 void hmap_print(struct hmap *map);
 
 int hmap_update(struct hmap *map, void *key, void *data);
-
 
 #endif

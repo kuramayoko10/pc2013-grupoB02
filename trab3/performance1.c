@@ -1,4 +1,3 @@
-/*
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -23,4 +22,3 @@ int main(void)
 	printf("Took %fs.\n", (float)(end-begin)/CLOCKS_PER_SEC);
 	return 0;
 }
-*/

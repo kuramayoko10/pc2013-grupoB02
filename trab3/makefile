@@ -1,5 +1,5 @@
 CC=gcc
-CCFLAGS=-std=c99 -Wall -Wextra -pedantic -pg
+CCFLAGS=-std=c99 -Wall -Wextra -pedantic -O3
 CLFLAGS=
 
 
