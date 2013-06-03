@@ -35,7 +35,8 @@ int wordCompound(char **array, int threshold, char *finalWord)
         {
             for(j = 0; j < threshold; j++)
             {
-                concat = strcat(array[i], array[j]);
+                strcpy(concat, array[i]);
+                strcat(concat, array[j]);
                 
                 if(strcmp(concat, finalWord) == 0)
                 {
