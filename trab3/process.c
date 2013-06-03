@@ -40,7 +40,6 @@ int wordCompound(char **array, int threshold, char *finalWord)
                 
                 if(strcmp(concat, finalWord) == 0)
                 {
-                    printf("Found: %s\n", finalWord);
                     return 1;
                 }
             }
@@ -58,6 +57,7 @@ int main(void)
 	FILE *input_file, *smallWordFile, *compoundWordFile;
 	struct hmap *word_map;
 	unsigned long i = 0, sum = 0, rep = 0;
+    long count = 0;
     
 	qrand_seed((unsigned)time(NULL));
     
@@ -94,17 +94,28 @@ int main(void)
     fclose(smallWordFile);
     fclose(compoundWordFile);
     
-    /*Teste de Composicao da primeira palavra de compoundWordArray*/
-    if(wordCompound(smallWordArray, N_SMALL_WORD, compoundWordArray[0]))
-        printf("Encontrei!!\n");
-    else
-        printf("Nao encontrei!!\n");
+//    /*Teste de Composicao da primeira palavra de compoundWordArray*/
+//    if(wordCompound(smallWordArray, N_SMALL_WORD, compoundWordArray[0]))
+//        printf("Encontrei!!\n");
+//    else
+//        printf("Nao encontrei!!\n");
+//    
+//    /*Teste de Composicao da palavra brutelike*/
+//    if(wordCompound(smallWordArray, N_SMALL_WORD, compoundWordArray[6003]))
+//        printf("Encontrei!!\n");
+//    else
+//        printf("Nao encontrei!!\n");
     
-    /*Teste de Composicao da palavra brutelike*/
-    if(wordCompound(smallWordArray, N_SMALL_WORD, compoundWordArray[6003]))
-        printf("Encontrei!!\n");
-    else
-        printf("Nao encontrei!!\n");
+    /*Contagem de palavras compostas*/
+    for(i = 0; i < N_COMPOUND_WORD; i++)
+    {
+        if(wordCompound(smallWordArray, N_SMALL_WORD, compoundWordArray[i]))
+        {
+           printf("Found: %s\n", compoundWordArray[i]);
+            count++;
+        }
+    }
+    printf("Encontrou %lu palavras compostas\n", count);
     
     /*Armazena palavras no Hash*/
 	memset(input_string, '\0', 40);
@@ -125,6 +136,7 @@ int main(void)
 	}
 	fclose(input_file);
     
+    /*
 	for(i = 0; i < rep; )
 	{
 		qrand_word(input_string);
@@ -136,6 +148,7 @@ int main(void)
 			i++;	
 		}
 	}
+    */
 	hmap_free(word_map);
     
     for(i = 0; i < N_SMALL_WORD; i++)
