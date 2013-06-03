@@ -66,6 +66,13 @@ int main(void)
 	if (word_map == NULL)
 		return FAILURE;
     
+    /* Armazena palavras ordenadas em 2 listas
+     * A primeira lista contem as palavras de 5 letras ou menos ordenadas
+     * A segunda lista contem as palavras de mais de 5 letras, tambem ordenadas
+     */
+    
+    
+    /*Armazena palavras no Hash*/
 	memset(input_string, '\0', 40);
 	while (fscanf(input_file, "%40s", input_string) != EOF)
 	{
