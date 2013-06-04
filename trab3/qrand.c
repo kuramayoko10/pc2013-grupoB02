@@ -29,7 +29,7 @@ void qrand_test(unsigned n, unsigned long long iterations)
 void qrand_word(char *s)
 {
 	unsigned i, lenght;
-	lenght = rand()%TOTAL_FIVE;
+	lenght = qrand()%TOTAL_FIVE;
 	if (lenght > TOTAL_FOUR)
 		lenght = 5;	
 	else if (lenght > TOTAL_THREE)
@@ -40,8 +40,7 @@ void qrand_word(char *s)
 		lenght = 2;
 	else 
 		lenght = 1;
-
-	memset(s+lenght, '\0', 30-lenght);
+	memset(s+lenght, '\0', 6-lenght);
 	for (i=0; i<lenght; ++i)
 	{
 		s[i]='a'+(qrand())%26;	

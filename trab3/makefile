@@ -1,5 +1,5 @@
 CC=gcc
-CCFLAGS=-std=c99 -Wall -Wextra -pedantic -O3
+CCFLAGS=-std=c99 -Wall -Wextra -pedantic -O3 -fopenmp
 CLFLAGS=
 
 
@@ -26,7 +26,7 @@ process.o: process.c process.h common.h
 	$(CC) $(CCFLAGS) $< -c
 
 process: hmap process.c process.h common.h
-	$(CC) $(CCFLAGS) $< -o process
+	$(CC) $(CCFLAGS) $< -o process 
 
 #Removes all tildes ending files, objects codes and test executable
 clean:
