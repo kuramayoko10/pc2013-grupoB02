@@ -9,8 +9,9 @@
 #include "process.h"
 
 
-char **less_array, **more_array;
+char **less_array, **more_array, **all_array;
 struct hmap *less_map;
+clock_t start, finish;
 
 
 
@@ -18,8 +19,11 @@ int main(void)
 {
 	qrand_seed((unsigned)time(NULL));
 	init();
+	start=clock();
 	process_less();
-	process_more();
+	finish = clock();
+	printf("Took %fs.\n", (float)(finish-start)/CLOCKS_PER_SEC);
+	//process_more();
 	end();
 	return SUCCESS;
 }
@@ -65,12 +69,14 @@ void init(void)
 	unsigned i;                                                        
 	bool flag_found=FALSE;                                             
 	char input_string[40];
-	FILE *less_file, *more_file;
+	FILE *less_file, *more_file, *all_file;
 	less_map = hmap_init(MAP_SIZE, 6*sizeof(char), sizeof(bool), string_hash); 
 	less_file = fopen("less.txt", "r");                                
 	more_file = fopen("more.txt", "r");                                
+	all_file = fopen("all.txt", "r");
 	less_array = malloc(sizeof(char *)*N_LESS_WORD);                   
 	more_array = malloc(sizeof(char *)*N_MORE_WORD);                   
+	all_array = mallloc(sizeof(char *)*N_ALL_WORD);
 	for (i=0, memset(input_string, '\0', 6);                           
 			fscanf(less_file, "%s", input_string) != EOF; i++) 
 	{                                                                  
@@ -84,6 +90,13 @@ void init(void)
 		more_array[i] = (char*)malloc(sizeof(char)*41);            
 		strcpy(more_array[i], input_string);                       
 	}
+	for (i=0; fscanf(more_file, "%s", input_string) != EOF; i++)   
+	{
+		all_array[i] = (char*)malloc(sizeof(char)*41);            
+		strcpy(all_array[i], input_string);                       
+	}
+
+	
 	fclose(less_file);                                                 
 	fclose(more_file);                                                 
 }       
@@ -109,8 +122,9 @@ void process_less(void)
 	for (i=0; i<N_LESS_WORD;)
 	{
 		qrand_word(rand_str);
-		if (hmap_remove(less_map, rand_str, &found_flag)==SUCCESS)
+		if (hmap_search(less_map, rand_str, &found_flag)==SUCCESS)
 		{
+			hmap_remove(less_map, rand_str, &found_flag);
 			printf("Found:%s\n", rand_str);
 			i++;
 		}
