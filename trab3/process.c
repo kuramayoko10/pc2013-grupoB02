@@ -13,6 +13,10 @@ char **less_array, **more_array, **all_array;
 struct hmap *less_map;
 clock_t start, finish;
 
+void init();
+void end();
+void process_less();
+void process_more();
 
 
 int main(void)
