@@ -148,7 +148,7 @@ void process_more(int argc, char **argv)
 		char *compoundWordArray[SIZE_TO_READ];
 		FILE *fMore;
 		fMore = fopen("more.txt", "r");
-		rc = MPI_Recv(&posicao, 1, MPI_INT, source, tag, MPI_COMM_WORLD, &Stat);
+		MPI_Recv(&posicao, 1, MPI_INT, source, tag, MPI_COMM_WORLD, &Stat);
 		fseek(fMore, posicao, SEEK_SET);
 		/*posiciona para cada no o local certo do arquivo para este ler essa parte apenas*/
 		for(;count < SIZE_TO_READ; count++){
