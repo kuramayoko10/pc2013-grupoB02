@@ -17,19 +17,19 @@ clock_t start, finish;
 void init();
 void end();
 void process_less();
-void process_more();
+void process_more(int argc, char **argv);
 int word_compound(char **array, int tam_array, char *finalWord);
 int word_compound_aux(char **array, int pos, char *final_word);
 int is_substring(char *sub_string, char *final_word);
 
 
-int main(void)
+int main(int argc, char **argv)
 {
 	qrand_seed((unsigned)time(NULL));
 	init();
 	start=clock();
 	//process_less();
-	process_more();
+	process_more(argc, argv);
 	finish = clock();
 	printf("Took %fs.\n", (float)(finish-start)/CLOCKS_PER_SEC);
 	end();
@@ -103,24 +103,26 @@ void process_less(void)
 	unsigned i;
 	char rand_str[6];
 	bool found_flag;
+#pragma omp parallel private(rand_str, found_flag)
 	for (i=0; i<N_LESS_WORD;)
 	{
 		qrand_word(rand_str);
 		if (hmap_search(less_map, rand_str, &found_flag)==SUCCESS)
+#pragma omp critical
 		{
 			hmap_remove(less_map, rand_str, &found_flag);
-			printf("Found:%s\n", rand_str);
+			//printf("Found:%s\n", rand_str);
 			i++;
 		}
 	}
 }
 
-void process_more(void)
+void process_more(int argc, char **argv)
 {
 	int numtasks, rank, rc, dest, source, tag=1, i=0;
 	MPI_Status Stat;
 	int total=0;
-	char *smallWordArray[N_SMALL_WORD], input_string[40];
+	char *smallWordArray[N_LESS_WORD], input_string[40];
     FILE *fLess;
 	fLess = fopen("less.txt", "r");
 
@@ -161,17 +163,19 @@ void process_more(void)
 			fscanf(fMore, "%s", compoundWordArray[count]);
 		}
 		fclose(fMore);
-	
+
 		/*Contagem de palavras compostas*/
+#pragma omp parallel for
 	    for(count = 0; count < SIZE_TO_READ; count++){
-	        if(wordCompound(smallWordArray, N_SMALL_WORD, compoundWordArray[count])){
-	        	printf("Found: %s\n", compoundWordArray[count]);
+	        if(word_compound(smallWordArray, N_LESS_WORD, compoundWordArray[count])){
+	        	//printf("Found: %s\n", compoundWordArray[count]);
+#pragma omp critical
             	total++;
         	}
     	}
 
 
-		
+
 	}
 
 	/*
@@ -179,7 +183,7 @@ void process_more(void)
 	 */
 	fclose(fLess);
 	MPI_Finalize();
-    printf("Total: %d\n", total);
+    	printf("Rank %d - Total: %d\n", rank, total);
 
 
 
@@ -282,5 +286,4 @@ int is_substring(char *sub_string, char *final_word)
 
 	return (int)strlen(sub_string);
 }
-
 
