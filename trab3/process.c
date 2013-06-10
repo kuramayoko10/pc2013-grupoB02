@@ -7,6 +7,7 @@
 #include "hmap.h"
 #include "qrand.h"
 #include "process.h"
+#include "mpi.h"
 
 
 char *less_array[N_LESS_WORD], *more_array[N_MORE_WORD], *all_array[N_ALL_WORD];
@@ -26,11 +27,11 @@ int main(void)
 {
 	qrand_seed((unsigned)time(NULL));
 	init();
-	//start=clock();
+	start=clock();
 	//process_less();
-	//finish = clock();
-	//printf("Took %fs.\n", (float)(finish-start)/CLOCKS_PER_SEC);
 	process_more();
+	finish = clock();
+	printf("Took %fs.\n", (float)(finish-start)/CLOCKS_PER_SEC);
 	end();
 	return SUCCESS;
 }
@@ -58,11 +59,11 @@ void init(void)
 	less_file = fopen("less.txt", "r");                                
 	more_file = fopen("more.txt", "r");                                
 	all_file = fopen("all.txt", "r");
-    
+
 	//less_array = (char*)malloc(sizeof(char)*N_LESS_WORD);
 	//more_array = (char*)malloc(sizeof(char)*N_MORE_WORD);
 	//all_array = (char*)mallloc(sizeof(char)*N_ALL_WORD);
-    
+
 	for (i=0, memset(input_string, '\0', 6); fscanf(less_file, "%s", input_string) != EOF; i++) 
 	{                                                                  
 		less_array[i] = (char*)malloc(sizeof(char)*6);             
@@ -80,8 +81,6 @@ void init(void)
 		all_array[i] = (char*)malloc(sizeof(char)*41);            
 		strcpy(all_array[i], input_string);                       
 	}
-
-	
 	fclose(less_file);                                                 
 	fclose(more_file);                                                 
 }       
@@ -94,8 +93,8 @@ void end(void)
 		free(less_array[i]);                                   
 	for(i = 0; i < N_MORE_WORD; i++)                               
 		free(more_array[i]);
-    for(i = 0; i < N_ALL_WORD; i++)
-        free(all_array[i]);
+	for(i = 0; i < N_ALL_WORD; i++)
+		free(all_array[i]);
 }
 
 
@@ -118,56 +117,130 @@ void process_less(void)
 
 void process_more(void)
 {
+	int numtasks, rank, rc, dest, source, tag=1, i=0;
+	MPI_Status Stat;
+	int total=0;
+	char *smallWordArray[N_SMALL_WORD], input_string[40];
+    FILE *fLess;
+	fLess = fopen("less.txt", "r");
+
+    while(fscanf(fLess, "%s", input_string) != EOF){
+        smallWordArray[i] = (char*)malloc(sizeof(char)*6);
+        strcpy(smallWordArray[i], input_string);
+        i++;
+    }
+
+	/*
+	 * Inicia uma sessão MPI
+	 */
+	MPI_Init(&argc, &argv);
+    
+	/*
+	 * Obtêm o id do processo
+	 */
+	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+	if (rank == 0){
+		int posicao = 0;
+		/*depois que dividimos todo o texto, enviamos cada partição para um nó, que ira fazer o processamento da sua particao*/
+		for(dest = 1; dest <= NUMBER_OF_NODES; dest++){
+			rc = MPI_Send(&posicao, 1, MPI_INT, dest, tag, MPI_COMM_WORLD);
+			posicao += SIZE_TO_READ; 
+		}
+	}
+	/*aqui são os nós que irao receber os textos e processalos*/
+	else{
+		source = 0;	
+		int posicao = 0, count=0, rec;
+		char *compoundWordArray[SIZE_TO_READ], teste[40];
+		FILE *fMore;
+		fMore = fopen("more.txt", "r");
+		rc = MPI_Recv(&posicao, 1, MPI_INT, source, tag, MPI_COMM_WORLD, &Stat);
+		fseek(fMore, posicao, SEEK_SET);
+		for(;count < SIZE_TO_READ; count++){
+	        compoundWordArray[count] = (char*)malloc(sizeof(char)*41);
+			fscanf(fMore, "%s", compoundWordArray[count]);
+		}
+		fclose(fMore);
+	
+		/*Contagem de palavras compostas*/
+	    for(count = 0; count < SIZE_TO_READ; count++){
+	        if(wordCompound(smallWordArray, N_SMALL_WORD, compoundWordArray[count])){
+	        	printf("Found: %s\n", compoundWordArray[count]);
+            	total++;
+        	}
+    	}
+
+
+		
+	}
+
+	/*
+	 * Finaliza a sessão MPI
+	 */
+	fclose(fLess);
+	MPI_Finalize();
+    printf("Total: %d\n", total);
+
+
+
+
+
+
+
+
+
+
+/*
 	unsigned i;
-    int count = 0;
+	int count = 0;
+#pragma omp parallel for
 	for(i = 0; i < N_MORE_WORD; i++)
 	{
 		if(word_compound(less_array, N_LESS_WORD, more_array[i]))
 		{
-			printf("Found: %s\n", more_array[i]);
-            count++;
+#pragma omp critical
+			count++;
 		}
 	}
-    
-    printf("Total: %d\n", count);
+	printf("Total: %d\n", count);	*/
 }
 
 int word_compound(char **array, int tam_array, char *finalWord)
 {
 	int i, ret;
-    char buffer[41];
-    
+	char buffer[41];
+
 	for(i = 0; i < tam_array; i++)
 	{
 		int temp = is_substring(array[i], finalWord);
-        int j;
-        
-        
-        if(temp == 0)
-            return 1;
-        
-        if(temp == -1)
-        {
-            continue;
-        }
-        else
-        {
-            int aux = abs((int)strlen(finalWord) - temp);
-            
-            for(j = 0; j < aux; j++)
-            {
-                buffer[j] = finalWord[temp+j];
-            }
-            buffer[j] = '\0';
-            
-            ret = word_compound(array, tam_array, buffer);
-            
-            if(ret == 1)
-                return 1;
-        }
+		int j;
+
+
+		if(temp == 0)
+			return 1;
+
+		if(temp == -1)
+		{
+			continue;
+		}
+		else
+		{
+			int aux = abs((int)strlen(finalWord) - temp);
+
+			for(j = 0; j < aux; j++)
+			{
+				buffer[j] = finalWord[temp+j];
+			}
+			buffer[j] = '\0';
+
+			ret = word_compound(array, tam_array, buffer);
+
+			if(ret == 1)
+				return 1;
+		}
 
 	}
-    
+
 	return 0;
 }
 
@@ -190,23 +263,23 @@ int old_word_compound(char **array, int threshold, char *finalWord)
 			}
 		}
 	}
-    
+
 	return 0;
 }
 
 int is_substring(char *sub_string, char *final_word)
 {
 	int i = 0, tam = (int)strlen(sub_string);
-    
-    if(strlen(final_word) < tam)
-        return -1;
-    
+
+	if(strlen(final_word) < tam)
+		return -1;
+
 	if(!strcmp(sub_string, final_word))
 		return 0;
 	for(;i<tam;i++)
 		if(sub_string[i] != final_word[i])
 			return -1;
-    
+
 	return (int)strlen(sub_string);
 }
 
