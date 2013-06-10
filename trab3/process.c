@@ -54,7 +54,7 @@ void init(void)
 	unsigned i;                                                        
 	bool flag_found=FALSE;                                             
 	char input_string[40];
-	FILE *less_file, *more_file, *all_file;
+	FILE *less_file, *more_file;
 	less_map = hmap_init(MAP_SIZE, 6*sizeof(char), sizeof(bool), string_hash); 
 	less_file = fopen("less.txt", "r");                                
 	more_file = fopen("more.txt", "r");                                
