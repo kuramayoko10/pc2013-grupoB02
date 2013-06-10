@@ -58,7 +58,6 @@ void init(void)
 	less_map = hmap_init(MAP_SIZE, 6*sizeof(char), sizeof(bool), string_hash); 
 	less_file = fopen("less.txt", "r");                                
 	more_file = fopen("more.txt", "r");                                
-	all_file = fopen("all.txt", "r");
 
 	//less_array = (char*)malloc(sizeof(char)*N_LESS_WORD);
 	//more_array = (char*)malloc(sizeof(char)*N_MORE_WORD);
@@ -76,11 +75,6 @@ void init(void)
 		more_array[i] = (char*)malloc(sizeof(char)*41);            
 		strcpy(more_array[i], input_string);                       
 	}
-	for (i=0; fscanf(more_file, "%s", input_string) != EOF; i++)   
-	{
-		all_array[i] = (char*)malloc(sizeof(char)*41);            
-		strcpy(all_array[i], input_string);                       
-	}
 	fclose(less_file);                                                 
 	fclose(more_file);                                                 
 }       
@@ -93,8 +87,6 @@ void end(void)
 		free(less_array[i]);                                   
 	for(i = 0; i < N_MORE_WORD; i++)                               
 		free(more_array[i]);
-	for(i = 0; i < N_ALL_WORD; i++)
-		free(all_array[i]);
 }
 
 
@@ -119,13 +111,14 @@ void process_less(void)
 
 void process_more(int argc, char **argv)
 {
-	int numtasks, rank, rc, dest, source, tag=1, i=0;
+	int rank, dest, source, tag=1, i=0;
 	MPI_Status Stat;
 	int total=0;
 	char *smallWordArray[N_LESS_WORD], input_string[40];
     FILE *fLess;
 	fLess = fopen("less.txt", "r");
 
+//copia as palavras com tamanho menor que 6 para um array, pois fica mais rapido o processamento
     while(fscanf(fLess, "%s", input_string) != EOF){
         smallWordArray[i] = (char*)malloc(sizeof(char)*6);
         strcpy(smallWordArray[i], input_string);
@@ -143,21 +136,21 @@ void process_more(int argc, char **argv)
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 	if (rank == 0){
 		int posicao = 0;
-		/*depois que dividimos todo o texto, enviamos cada partição para um nó, que ira fazer o processamento da sua particao*/
+		//eh enviado a posicao que cada no escravo deve ler dentro do arquivo
 		for(dest = 1; dest <= NUMBER_OF_NODES; dest++){
 			rc = MPI_Send(&posicao, 1, MPI_INT, dest, tag, MPI_COMM_WORLD);
 			posicao += SIZE_TO_READ; 
 		}
 	}
-	/*aqui são os nós que irao receber os textos e processalos*/
 	else{
 		source = 0;	
-		int posicao = 0, count=0, rec;
-		char *compoundWordArray[SIZE_TO_READ], teste[40];
+		int posicao = 0, count=0;
+		char *compoundWordArray[SIZE_TO_READ];
 		FILE *fMore;
 		fMore = fopen("more.txt", "r");
 		rc = MPI_Recv(&posicao, 1, MPI_INT, source, tag, MPI_COMM_WORLD, &Stat);
 		fseek(fMore, posicao, SEEK_SET);
+		/*posiciona para cada no o local certo do arquivo para este ler essa parte apenas*/
 		for(;count < SIZE_TO_READ; count++){
 	        compoundWordArray[count] = (char*)malloc(sizeof(char)*41);
 			fscanf(fMore, "%s", compoundWordArray[count]);
@@ -173,9 +166,6 @@ void process_more(int argc, char **argv)
             	total++;
         	}
     	}
-
-
-
 	}
 
 	/*
@@ -184,31 +174,12 @@ void process_more(int argc, char **argv)
 	fclose(fLess);
 	MPI_Finalize();
     	printf("Rank %d - Total: %d\n", rank, total);
-
-
-
-
-
-
-
-
-
-
-/*
-	unsigned i;
-	int count = 0;
-#pragma omp parallel for
-	for(i = 0; i < N_MORE_WORD; i++)
-	{
-		if(word_compound(less_array, N_LESS_WORD, more_array[i]))
-		{
-#pragma omp critical
-			count++;
-		}
-	}
-	printf("Total: %d\n", count);	*/
 }
 
+/*
+**	para fazer a composicao de palavras utilizamos a seguiten lógica: Buscamos dentro do array de palavras menores que 6 letras por uma palavra **	que comece uma das palavras das palavras com tamanho maior que 5. Caso encontremos tal palavra, chamamos recursivamente a funcao, para o resto **	da palavra(as que sao maiores que 5) que sobrou, caso consiga completar a palavra, eh encontrada. 
+**		Os parametros de entrada sao o array de palavras com tamanho menor que 6, o tamanho desse array, e uma palavra com tamanho maior que 5.
+*/
 int word_compound(char **array, int tam_array, char *finalWord)
 {
 	int i, ret;
@@ -230,7 +201,7 @@ int word_compound(char **array, int tam_array, char *finalWord)
 		else
 		{
 			int aux = abs((int)strlen(finalWord) - temp);
-
+			//copia o restante da palavra maior para um buffer, logo em seguida a funcao eh chamada recursivamente para o que sobrou da palavra 			maior, no caso o buffer
 			for(j = 0; j < aux; j++)
 			{
 				buffer[j] = finalWord[temp+j];
@@ -248,34 +219,12 @@ int word_compound(char **array, int tam_array, char *finalWord)
 	return 0;
 }
 
-int old_word_compound(char **array, int threshold, char *finalWord)
-{
-	int i, j;
-	char *concat = (char*)malloc(sizeof(char)*40);
-	for(i = 0; i < threshold; i++)
-	{
-		if(array[i][0] == finalWord[0])
-		{
-			for(j = 0; j < threshold; j++)
-			{
-				strcpy(concat, array[i]);
-				strcat(concat, array[j]);
-				if(strcmp(concat, finalWord) == 0)
-				{
-					return 1;
-				}
-			}
-		}
-	}
-
-	return 0;
-}
-
+/*funcao destinada para verificar se as letras de uma string pertencem a outra(no caso para ver se uma palavra com tamanho menor que 6 pertence a uma com tamanho maior que 5*/
 int is_substring(char *sub_string, char *final_word)
 {
 	int i = 0, tam = (int)strlen(sub_string);
 
-	if(strlen(final_word) < tam)
+	if((int)strlen(final_word) < tam)
 		return -1;
 
 	if(!strcmp(sub_string, final_word))
