@@ -20,8 +20,8 @@ float *solve(float **A, float *b)
 			sum = b[i];
 			maxdiff = 0.0;
 			maxx = 0.0;
-				for (j=0; j<order; ++j)
-					sum -= (i!=j)?A[i][j]*oldx[j]:0;
+			for (j=0; j<order; ++j)
+				sum -= (i!=j)?A[i][j]*oldx[j]:0;
 			x[i] = sum/A[i][i];
 			for (j=0; j<order; ++j)
 			{
