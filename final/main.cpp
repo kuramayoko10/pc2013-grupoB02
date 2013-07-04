@@ -4,7 +4,7 @@
 #include "common.h"
 #include "smatrix.h"
 
-float *solve(float **, float *);
+float *solve(float *, float *);
 
 unsigned order;
 unsigned row_test;
@@ -16,7 +16,7 @@ int main(int argc, char **argv)
 	unsigned i, j;
 	char path[20]="matriz";
 	FILE *file;
-	float **a;
+	float *A;
 	float *b, *res;
 	clock_t begin, end;
 	if (argc != 2)
@@ -32,13 +32,15 @@ int main(int argc, char **argv)
 	fscanf(file, "%u", &row_test);
 	fscanf(file, "%f", &err);
 	fscanf(file, "%u", &it_num);
-	a = smatrix_new(order);
+	A = smatrix_new(order);
 	b = vector_new(order);
 	for (i=0; i<order; ++i)
 	{
 		for (j=0; j<order; ++j)
 		{
-			fscanf(file, "%f", &a[i][j]);
+			float val;
+			fscanf(file, "%f", &val);
+			smatrix_set(A, i, j, val);
 		}	
 	}
 	for (i=0; i<order; ++i)
@@ -46,16 +48,16 @@ int main(int argc, char **argv)
 		fscanf(file, "%f", &b[i]);
 	}
 	begin = clock();
-	res = solve(a, b);
+	res = solve(A, b);
 	end = clock();
 	TIME_DIFF(begin, end);
-	test_row(a, res);
+	test_row(A, res);
 	printf("Iterations: %u\n", it_num);
-	printf("RowTest: %d, [%f] =? %f\n", row_test, test_row(a, res), 
+	printf("RowTest: %d, [%f] =? %f\n", row_test, test_row(A, res), 
 			b[row_test]);
 	vector_free(b);
 	vector_free(res);
-	smatrix_free(a);
+	smatrix_free(A);
 	fclose(file);
 	return SUCCESS;
 }

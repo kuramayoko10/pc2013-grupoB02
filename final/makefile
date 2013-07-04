@@ -1,22 +1,22 @@
-CC=gcc
-CCFLAGS=-std=c99 -march=native -mtune=native -Wall -Wextra -pedantic -O3 
-CLFLAGS=
+CC=g++
+CCFLAGS=-Wall -pedantic -O3 
+CLFLAGS=-lcuda
 CUDAC=nvcc
 CUDACFLAGS=
 
-gpu: gpu_solver.o main.o smatrix.o
-	$(CC) $(CCFLAGS) $^ -o cpu_solver $(CLFLAGS)
-
 cpu: cpu_solver.o main.o smatrix.o
-	$(CC) $(CCFLAGS) $^ -o cpu_solver $(CLFLAGS)
+	$(CC) $(CCFLAGS) $^ -o cpu_solver
 
-main.o: main.c common.h
+gpu: gpu_solver.o main.o smatrix.o
+	$(CUDAC) $(CUDACFLAGS) $^ -o gpu_solver $(CLFLAGS)
+
+main.o: main.cpp common.h
 	$(CC) $(CCFLAGS) $< -c
 
-smatrix.o: smatrix.c smatrix.h common.h
+smatrix.o: smatrix.cpp smatrix.h common.h
 	$(CC) $(CCFLAGS) $< -c
 
-cpu_solver.o: cpu_solver.c common.h
+cpu_solver.o: cpu_solver.cpp common.h
 	$(CC) $(CCFLAGS) $< -c
 
 gpu_solver.o: gpu_solver.cu common.h
@@ -25,3 +25,4 @@ gpu_solver.o: gpu_solver.cu common.h
 #Removes all tildes ending files, objects codes and test executable
 clean:
 	rm -rf *~ *.o .*.swp cpu_solver gpu_solver 
+
