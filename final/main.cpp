@@ -4,6 +4,8 @@
 #include "common.h"
 #include "smatrix.h"
 
+#define RATIO 1.0 
+
 float *solve(float *, float *);
 
 unsigned order;
@@ -40,19 +42,18 @@ int main(int argc, char **argv)
 		{
 			float val;
 			fscanf(file, "%f", &val);
-			smatrix_set(A, i, j, val/10.0);
+			smatrix_set(A, i, j, val/RATIO);
 		}	
 	}
 	for (i=0; i<order; ++i)
 	{
 		float val;
 		fscanf(file, "%f", &val);
-		&b[i]=val/10.0;
+		b[i]=val/RATIO;
 	}
 	begin = clock();
 	res = solve(A, b);
 	end = clock();
-	TIME_DIFF(begin, end);
 	test_row(A, res);
 	printf("Iterations: %u\n", it_num);
 	printf("RowTest: %d, [%f] =? %f\n", row_test, test_row(A, res), 

@@ -18,7 +18,7 @@
 __global__ void kernel(float* A, float *b, float *x, float* oldx, float err, unsigned order) 
 { 
 	unsigned idx = threadIdx.x + blockDim.x * blockIdx.x; 
-	unsigned i;
+	unsigned i, it=0;
 	float aux;
 	if(idx<order)
 	{ 
@@ -26,7 +26,7 @@ __global__ void kernel(float* A, float *b, float *x, float* oldx, float err, uns
 		__shared__ float maxx; 
 		maxxdiff=1.0; 
 		maxx=1.0; 
-		while((maxxdiff/maxx)>err)
+		while(/*(maxxdiff/maxx)>err*/ it < 150000/order)
 		{ 
 			x[idx] = 0.0; 
 			maxxdiff = 0.0; 
@@ -43,6 +43,7 @@ __global__ void kernel(float* A, float *b, float *x, float* oldx, float err, uns
 			if (aux > maxxdiff)
 				maxxdiff = aux;
 			oldx[idx]=x[idx]; 
+			it++;
 		} 
 	} 
 }
@@ -69,7 +70,6 @@ float *solve(float *A, float *b)
 	cudaFree(gpu_b);
 	cudaFree(gpu_x);
 	cudaFree(gpu_oldx);
-	vector_print(x);
 	return x;
 }
 
