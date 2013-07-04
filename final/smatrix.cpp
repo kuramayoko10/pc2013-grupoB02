@@ -28,11 +28,6 @@ void smatrix_set(float *matrix, unsigned i, unsigned j, float val)
 	matrix[i*order+j] = val;
 }
 	
-float smatrix_at(float *matrix, unsigned i, unsigned j)
-{
-	return matrix[i*order+j];
-}
-
 float *vector_new(unsigned size)
 {
 	float *vec;
