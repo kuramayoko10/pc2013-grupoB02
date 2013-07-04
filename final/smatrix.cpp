@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <limits.h>
 #include <assert.h>
+#include <stdio.h>
 #include "smatrix.h" 
 #include "extern.h"
 
@@ -49,6 +50,16 @@ void vector_free(float *vec)
 	free(vec);
 }
 
+void vector_print(float *vec)
+{
+	unsigned i;
+	printf("Vector at %p.\n", (void *) vec);
+	for (i=0; i<order; ++i)
+	{
+		printf("At vec[%u] = %f.\n", i, vec[i]);
+	}
+}
+
 float test_row(float *A, float *x)
 {
 	unsigned i;
@@ -59,3 +70,4 @@ float test_row(float *A, float *x)
 	}
 	return sum;
 }
+
