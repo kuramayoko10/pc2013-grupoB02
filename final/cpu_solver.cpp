@@ -4,7 +4,7 @@
 #include "extern.h"
 #include "smatrix.h"
 
-float *solve(float **A, float *b)
+float *solve(float *A, float *b)
 {
 	unsigned i, j, it=0;
 	float sum, maxdiff=0.0, maxx=0.0;
@@ -20,9 +20,9 @@ float *solve(float **A, float *b)
 			sum = b[i];
 			maxdiff = 0.0;
 			maxx = 0.0;
-				for (j=0; j<order; ++j)
-					sum -= (i!=j)?A[i][j]*oldx[j]:0;
-			x[i] = sum/A[i][i];
+			for (j=0; j<order; ++j)
+				sum -= (i!=j)?smatrix_at(A, i, j)*oldx[j]:0;
+			x[i] = sum/smatrix_at(A, i, i);
 			for (j=0; j<order; ++j)
 			{
 				float aux = abs(x[j]);

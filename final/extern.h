@@ -4,7 +4,7 @@
 extern unsigned order;
 extern unsigned row_test;
 extern unsigned it_num;
-float err;
+extern float err;
 
 
 #endif
