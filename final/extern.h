@@ -1,10 +1,11 @@
 #ifndef EXTERN_H
 #define EXTERN_H
 
-extern unsigned order;
-extern unsigned row_test;
-extern unsigned it_num;
-extern float err;
+//Constantes globais utilizadas tanto no cpu_solve quanto na cpu_solve
+extern unsigned order;          //Ordem da matriz
+extern unsigned row_test;       //Linha que deseja-se avaliar
+extern unsigned it_num;         //Numero de iteracoes maximo
+extern float err;               //Grau de erro desejado
 
 
 #endif
