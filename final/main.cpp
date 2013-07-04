@@ -40,12 +40,14 @@ int main(int argc, char **argv)
 		{
 			float val;
 			fscanf(file, "%f", &val);
-			smatrix_set(A, i, j, val);
+			smatrix_set(A, i, j, val/10.0);
 		}	
 	}
 	for (i=0; i<order; ++i)
 	{
-		fscanf(file, "%f", &b[i]);
+		float val;
+		fscanf(file, "%f", &val);
+		&b[i]=val/10.0;
 	}
 	begin = clock();
 	res = solve(A, b);
