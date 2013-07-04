@@ -7,6 +7,8 @@ void smatrix_set(float *matrix, unsigned i, unsigned j, float val);
 float smatrix_at(float *matrix, unsigned i, unsigned j);
 float * vector_new(unsigned size);
 void vector_free(float *vec);
+void vector_print(float *vec);
 float test_row(float *A, float *x);
 
 #endif
+
